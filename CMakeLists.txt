@@ -18,6 +18,7 @@ include(${QT_USE_FILE}) # TODO: maybe because of this?
 # find_package(Boost REQUIRED COMPONENTS system)
 #find_package(Eigen REQUIRED)
 #find_package(OMPL REQUIRED)
+find_package(Threads REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -85,6 +86,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
  target_link_libraries(box2d_push_planner
    ${catkin_LIBRARIES}
    ${QT_LIBRARIES}
+   ${CMAKE_THREAD_LIBS_INIT}
  )
 message(${catkin_LIBRARIES})
 

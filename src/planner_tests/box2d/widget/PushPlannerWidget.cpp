@@ -9,6 +9,12 @@
 
 using namespace planner_tests::box2d::widget;
 
+void PushPlannerWidget::PlannerThread::run() {
+//    while (not interrrupt) {
+      planner.dummyTest();
+//    }
+}
+
 PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world, QWidget* parent):
         QGroupBox("PushPlannerWidget", parent)
 {
@@ -21,22 +27,32 @@ PushPlannerWidget::~PushPlannerWidget() {
 }
 
 void PushPlannerWidget::button_clicked(bool enabled) {
+    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::button_clicked]");
     auto world = lockWorld();
     if (enabled) {
-        world->getLogger()->logInfo("start planner");
+        world->getLogger()->logInfo("Starting planner", log_prefix);
         // TODO it doesn't make much sense to always create new controllers -> see COntrollerWidget
         _robot_controller.reset();
         sim_env::Box2DRobotPtr robot = world->getBox2DRobot(_robot_selector->currentText().toStdString());
         sim_env::Box2DObjectPtr target = world->getBox2DObject(_target_selector->currentText().toStdString());
         _robot_controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
         mps::planner::pushing::PlanningProblem planning_problem(world, robot, _robot_controller, target);
-        _planner.setup(planning_problem);
+        planning_problem.workspace_bounds.x_limits[0] = -10.0f;
+        planning_problem.workspace_bounds.x_limits[1] = 10.0f;
+        planning_problem.workspace_bounds.y_limits[0] = -10.0f;
+        planning_problem.workspace_bounds.y_limits[1] = 10.0f;
+        planning_problem.workspace_bounds.z_limits[0] = 0.0f;
+        planning_problem.workspace_bounds.z_limits[1] = 0.0f;
+        _planner_thread.planner.setup(planning_problem);
         // TODO debug
-        _planner.dummyTest();
-//        _planner.solve()
-
+        _planner_thread.thread = std::thread(&PlannerThread::run, std::ref(_planner_thread));
     } else {
-        world->getLogger()->logInfo("stop planner");
+        if (_planner_thread.thread.joinable()) {
+            world->getLogger()->logInfo("Stopping planner...", log_prefix);
+            _planner_thread.interrrupt = true;
+            _planner_thread.thread.join();
+        }
+        world->getLogger()->logInfo("Planner stopped", log_prefix);
     }
 }
 

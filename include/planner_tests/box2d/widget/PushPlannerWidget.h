@@ -5,6 +5,8 @@
 #ifndef PLANNER_TESTS_PUSHPLANNERWIDGET_H
 #define PLANNER_TESTS_PUSHPLANNERWIDGET_H
 
+#include <thread>
+
 #include <QtGui/QWidget>
 #include <QtGui/QGroupBox>
 #include <QtGui/QComboBox>
@@ -28,19 +30,26 @@ namespace planner_tests {
             public slots:
                 void button_clicked(bool enabled);
             private:
+                struct PlannerThread {
+                    mps::planner::pushing::OraclePushPlanner planner;
+                    std::thread thread;
+                    bool interrrupt;
+                    void run();
+                };
+                PlannerThread _planner_thread;
                 sim_env::Box2DWorldWeakPtr _weak_world;
                 sim_env::Box2DRobotVelocityControllerPtr _robot_controller;
-                mps::planner::pushing::OraclePushPlanner _planner;
-                void buildUI();
-                void synchUI();
-                sim_env::Box2DWorldPtr lockWorld();
-                // inputs
+                // input widgets
                 QComboBox* _robot_selector;
                 QComboBox* _target_selector;
                 QLineEdit* _time_out_edit;
                 QCheckBox* _semi_dynamic_check_box;
                 QLineEdit* _t_max_edit;
                 QPushButton* _start_button;
+                // member functions
+                void buildUI();
+                void synchUI();
+                sim_env::Box2DWorldPtr lockWorld();
             };
         }
     }
