@@ -36,6 +36,11 @@ void PushPlannerWidget::button_clicked(bool enabled) {
         sim_env::Box2DRobotPtr robot = world->getBox2DRobot(_robot_selector->currentText().toStdString());
         sim_env::Box2DObjectPtr target = world->getBox2DObject(_target_selector->currentText().toStdString());
         _robot_controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
+        using namespace std::placeholders;
+        sim_env::Robot::ControlCallback callback = std::bind(&sim_env::Box2DRobotVelocityController::control,
+                                                             _robot_controller,
+                                                             _1, _2, _3, _4, _5);
+        robot->setController(callback);
         mps::planner::pushing::PlanningProblem planning_problem(world, robot, _robot_controller, target);
         planning_problem.workspace_bounds.x_limits[0] = -10.0f;
         planning_problem.workspace_bounds.x_limits[1] = 10.0f;
@@ -107,7 +112,7 @@ void PushPlannerWidget::synchUI() {
     }
     // set selectable target objects
     std::vector<sim_env::ObjectPtr> objects;
-    world->getObjects(objects);
+    world->getObjects(objects, false);
     _target_selector->clear();
     for (auto object : objects) {
         _target_selector->addItem(object->getName().c_str());
