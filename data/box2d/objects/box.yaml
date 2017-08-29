@@ -1,0 +1,11 @@
+name: box_object
+links:
+  - name: box
+    geometry:
+      - [0.0, 0.0, 0.1, 0.0, 0.1, 0.1, 0.0, 0.1]
+    mass: 0.01
+    trans_friction: 0.1
+    rot_friction: 0.0001
+    contact_friction: 1.5
+    restitution: 1.0
+joints:

@@ -1,0 +1,18 @@
+scale: 10.0
+robots:
+  - name: robot
+    filename: ../robots/holonomic_plower.yaml
+objects:
+  - name: box
+    filename: ../objects/box.yaml
+    static: False
+world_bounds: [-20.0, -20.0, 20.0, 20.0]
+states:
+  - name: robot
+    state:
+      configuration: [0.0, 0.0, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box
+    state:
+      configuration: [0.9, 1.0, -1.0]
+      velocity: [0.0, 0.0, 0.0]
