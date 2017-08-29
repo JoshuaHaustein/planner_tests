@@ -10,7 +10,7 @@ using namespace planner_tests::box2d;
 
 int main(int argc, char **argv) {
     sim_env::Box2DWorldPtr world = std::make_shared<sim_env::Box2DWorld>();
-    world->loadWorld("/home/joshua/projects/planning_catkin/src/planner_tests/data/box2d/worlds/free_world_1m_2s.yaml");
+    world->loadWorld("/home/joshua/projects/planning_catkin/src/planner_tests/data/box2d/worlds/free_world_2m_0s.yaml");
     sim_env::LoggerPtr logger = world->getLogger();
     logger->setLevel(sim_env::Logger::LogLevel::Debug);
     logger->logInfo("Testing OraclePushPlanner using Box2DSimEnv");

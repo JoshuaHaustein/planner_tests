@@ -35,13 +35,19 @@ void PushPlannerWidget::button_clicked(bool enabled) {
         _robot_controller.reset();
         sim_env::Box2DRobotPtr robot = world->getBox2DRobot(_robot_selector->currentText().toStdString());
         sim_env::Box2DObjectPtr target = world->getBox2DObject(_target_selector->currentText().toStdString());
+        // set robot controller
         _robot_controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
         using namespace std::placeholders;
         sim_env::Robot::ControlCallback callback = std::bind(&sim_env::Box2DRobotVelocityController::control,
                                                              _robot_controller,
                                                              _1, _2, _3, _4, _5);
         robot->setController(callback);
-        mps::planner::pushing::PlanningProblem planning_problem(world, robot, _robot_controller, target);
+        // create goal
+        Eigen::Vector3f goal_position(4.2, 4.2, 0.0);
+        // create planning problem
+        mps::planner::pushing::PlanningProblem planning_problem(world, robot,
+                                                                _robot_controller, target,
+                                                                goal_position);
         planning_problem.workspace_bounds.x_limits[0] = -10.0f;
         planning_problem.workspace_bounds.x_limits[1] = 10.0f;
         planning_problem.workspace_bounds.y_limits[0] = -10.0f;
@@ -112,10 +118,12 @@ void PushPlannerWidget::synchUI() {
     }
     // set selectable target objects
     std::vector<sim_env::ObjectPtr> objects;
-    world->getObjects(objects, false);
+    world->getObjects(objects, true);
     _target_selector->clear();
     for (auto object : objects) {
-        _target_selector->addItem(object->getName().c_str());
+        if (not object->isStatic()) {
+            _target_selector->addItem(object->getName().c_str());
+        }
     }
 }
 
