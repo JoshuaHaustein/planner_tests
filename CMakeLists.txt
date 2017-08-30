@@ -15,7 +15,7 @@ find_package(catkin REQUIRED
 ## System dependencies are found with CMake's conventions
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED) # TODO: I do not understand why we need this. Shoudn't this be 'inherited' from box2d_sim_env????
 include(${QT_USE_FILE}) # TODO: maybe because of this?
-# find_package(Boost REQUIRED COMPONENTS system)
+ find_package(Boost REQUIRED COMPONENTS program_options)
 #find_package(Eigen REQUIRED)
 #find_package(OMPL REQUIRED)
 find_package(Threads REQUIRED)
@@ -39,7 +39,7 @@ catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES planner_tests
   CATKIN_DEPENDS sim_env box2d_sim_env manipulation_planning_suite
-  DEPENDS
+  DEPENDS Threads Boost Qt4
 )
 
 ###########
@@ -60,7 +60,10 @@ set(SOURCE_FILES
         src/planner_tests/box2d/widget/PushPlannerWidget.cpp)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include
+        ${catkin_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
+        )
 
 ## Declare a C++ library
 # add_library(planner_tests
@@ -86,6 +89,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
  target_link_libraries(box2d_push_planner
    ${catkin_LIBRARIES}
    ${QT_LIBRARIES}
+   ${Boost_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
  )
 message(${catkin_LIBRARIES})

@@ -6,6 +6,7 @@
 #include <QtGui/QGridLayout>
 #include <QtGui/QLabel>
 #include <sim_env/Box2DController.h>
+#include <mps/planner/util/Logging.h>
 
 using namespace planner_tests::box2d::widget;
 
@@ -31,6 +32,7 @@ void PushPlannerWidget::button_clicked(bool enabled) {
     auto world = lockWorld();
     if (enabled) {
         world->getLogger()->logInfo("Starting planner", log_prefix);
+        mps::planner::util::logging::setLogger(world->getLogger());
         // TODO it doesn't make much sense to always create new controllers -> see COntrollerWidget
         _robot_controller.reset();
         sim_env::Box2DRobotPtr robot = world->getBox2DRobot(_robot_selector->currentText().toStdString());
@@ -48,10 +50,10 @@ void PushPlannerWidget::button_clicked(bool enabled) {
         mps::planner::pushing::PlanningProblem planning_problem(world, robot,
                                                                 _robot_controller, target,
                                                                 goal_position);
-        planning_problem.workspace_bounds.x_limits[0] = -10.0f;
-        planning_problem.workspace_bounds.x_limits[1] = 10.0f;
-        planning_problem.workspace_bounds.y_limits[0] = -10.0f;
-        planning_problem.workspace_bounds.y_limits[1] = 10.0f;
+        planning_problem.workspace_bounds.x_limits[0] = -2.0f;
+        planning_problem.workspace_bounds.x_limits[1] = 2.0f;
+        planning_problem.workspace_bounds.y_limits[0] = -2.0f;
+        planning_problem.workspace_bounds.y_limits[1] = 2.0f;
         planning_problem.workspace_bounds.z_limits[0] = 0.0f;
         planning_problem.workspace_bounds.z_limits[1] = 0.0f;
         _planner_thread.planner.setup(planning_problem);
