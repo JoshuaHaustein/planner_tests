@@ -16,10 +16,13 @@ void PushPlannerWidget::PlannerThread::run() {
 //    }
 }
 
-PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world, QWidget* parent):
+PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
+                                     sim_env::Box2DWorldViewerPtr viewer,
+                                     QWidget* parent):
         QGroupBox("PushPlannerWidget", parent)
 {
     _weak_world = world;
+    _weak_viewer = viewer;
     buildUI();
     synchUI();
 }
@@ -57,6 +60,7 @@ void PushPlannerWidget::button_clicked(bool enabled) {
         planning_problem.workspace_bounds.z_limits[0] = 0.0f;
         planning_problem.workspace_bounds.z_limits[1] = 0.0f;
         _planner_thread.planner.setup(planning_problem);
+        visualizePlanningProblem(planning_problem);
         // TODO debug
         _planner_thread.thread = std::thread(&PlannerThread::run, std::ref(_planner_thread));
     } else {
@@ -135,4 +139,26 @@ sim_env::Box2DWorldPtr PushPlannerWidget::lockWorld() {
         throw std::logic_error("[planner_tests::box2d::widget::lockWorld] Could not access Box2dWorld.");
     }
     return world;
+}
+
+void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::PlanningProblem& problem)
+{
+    sim_env::Box2DWorldViewerPtr viewer = _weak_viewer.lock();
+    if (!viewer) {
+        throw std::logic_error("[planner_tests::box2d::widget::PushPlannerWidget] Could not access viewer.");
+    }
+    // first clear any previous drawings
+    for (auto& handle : _drawing_handles) {
+        viewer->removeDrawing(handle);
+    }
+    // now visualize properties of the planning problem
+    // 1. show planning bounds
+    Eigen::Vector3f pos;
+    pos[0] = problem.workspace_bounds.x_limits[0];
+    pos[1] = problem.workspace_bounds.y_limits[0];
+    Eigen::Vector3f extents;
+    extents[0] = problem.workspace_bounds.x_limits[1] - problem.workspace_bounds.x_limits[0];
+    extents[1] = problem.workspace_bounds.y_limits[1] - problem.workspace_bounds.y_limits[0];
+    _drawing_handles.emplace_back(viewer->drawBox(pos, extents));
+    // TODO whatever else to show
 }
