@@ -12,7 +12,8 @@ using namespace planner_tests::box2d::widget;
 
 void PushPlannerWidget::PlannerThread::run() {
 //    while (not interrrupt) {
-      planner.dummyTest();
+    mps::planner::pushing::PlanningSolution sol;
+    planner.solve(sol);
 //    }
 }
 

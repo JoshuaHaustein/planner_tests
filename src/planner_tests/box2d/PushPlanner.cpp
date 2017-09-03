@@ -31,7 +31,7 @@ int main(int argc, const char* const* argv) {
         sim_env::LoggerPtr logger = world->getLogger();
         logger->setLevel(sim_env::Logger::LogLevel::Debug);
         logger->logInfo("Testing OraclePushPlanner using Box2DSimEnv");
-        sim_env::Box2DWorldViewerPtr world_viewer = std::make_shared<sim_env::Box2DWorldViewer>(world);
+        auto world_viewer = std::dynamic_pointer_cast<sim_env::Box2DWorldViewer>(world->getViewer());
         world_viewer->show(argc, argv);
         world_viewer->addCustomWidget(new widget::PushPlannerWidget(world, world_viewer), "PushPlanner");
         return world_viewer->run();
