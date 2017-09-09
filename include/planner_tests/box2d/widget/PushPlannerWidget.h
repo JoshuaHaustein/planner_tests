@@ -66,6 +66,7 @@ namespace planner_tests {
                 QLineEdit* _max_rot_vel;
                 QLineEdit* _min_action_duration;
                 QLineEdit* _max_action_duration;
+                QComboBox* _oracle_selector;
                 // columns 3, 4, 5, 6
                 QLineEdit* _goal_x;
                 QLineEdit* _goal_y;

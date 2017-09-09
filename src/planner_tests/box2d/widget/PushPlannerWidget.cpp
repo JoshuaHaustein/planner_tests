@@ -138,6 +138,14 @@ void PushPlannerWidget::buildUI() {
     layout->addWidget(_min_action_duration, 4, 3);
     _max_action_duration = new QLineEdit(QString("1.0"));
     layout->addWidget(_max_action_duration, 4, 4);
+    // Oracle selector
+    label = new QLabel("Oracle type:");
+    layout->addWidget(label, 5, 2);
+    _oracle_selector = new QComboBox();
+    _oracle_selector->addItem("None", mps::planner::pushing::PlanningProblem::OracleType::None);
+    _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);
+    _oracle_selector->addItem("Learned", mps::planner::pushing::PlanningProblem::OracleType::Learned);
+    layout->addWidget(_oracle_selector, 5, 3);
     ////////////////////////////////////////////////////////////
     ////////////////////// Bottom button ///////////////////////
     // start button
@@ -210,6 +218,14 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
     // settings control samples
     int value = readIntValue(_num_control_samples, 10);
     pp.num_control_samples = (unsigned int) (value > 0 ? value : 10);
+    // oracle type
+    bool ok = true;
+    int enum_value = _oracle_selector->itemData(_oracle_selector->currentIndex()).toInt(&ok);
+    if (not ok) {
+        enum_value = mps::planner::pushing::PlanningProblem::OracleType::None;
+    } else {
+        pp.oracle_type = mps::planner::pushing::PlanningProblem::OracleType(enum_value);
+    }
 }
 
 sim_env::Box2DWorldPtr PushPlannerWidget::lockWorld() {
