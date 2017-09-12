@@ -37,7 +37,7 @@ def create_world_yaml_desc(file_name, robot_path, object_path):
          'filename': object_path,
          'static': False}
     ]
-    root_dict['world_bounds'] = [-2, -2, 2, 2]
+    root_dict['world_bounds'] = [-1.8, -1.8, 1.8, 1.8]
     root_dict['states'] = [
         {'name': 'robot',
          'state': {'configuration': [0.0, 0.0, 0.0],
@@ -58,8 +58,8 @@ def create_planning_yaml_desc(file_name, world_path):
         'world_file': world_path,
         'robot_name': 'robot',
         'target_name': 'target',
-        'x_limits': [-2.0, 2.0],
-        'y_limits': [-2.0, 2.0],
+        'x_limits': [-1.5, 1.5],
+        'y_limits': [-1.5, 1.5],
         'z_limits': [0.0, 0.0],
         'max_velocity': 2.0,
         'max_rotation_vel': 2.0,
