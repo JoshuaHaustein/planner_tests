@@ -55,9 +55,13 @@ add_definitions(${QT_DEFINITIONS})
 
 set (MOC_HEADERS include/planner_tests/box2d/widget/PushPlannerWidget.h)
 QT4_WRAP_CPP( MOC_SRCS ${MOC_HEADERS})
-set(SOURCE_FILES
+set(PUSH_PLANNER_SRC
         src/planner_tests/box2d/PushPlanner.cpp
         src/planner_tests/box2d/widget/PushPlannerWidget.cpp)
+
+set(ORACLE_TRAINING_DATA_SRC
+        src/planner_tests/box2d/OracleTrainingDataGen.cpp)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include
@@ -77,9 +81,13 @@ include_directories(include
 
 ## Declare a C++ executable
  add_executable(box2d_push_planner
-         ${SOURCE_FILES}
+         ${PUSH_PLANNER_SRC}
          ${MOC_SRCS}
          )
+
+add_executable(box2d_oracle_generation
+        ${ORACLE_TRAINING_DATA_SRC}
+        )
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -92,7 +100,12 @@ include_directories(include
    ${Boost_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
  )
-message(${catkin_LIBRARIES})
+
+target_link_libraries(box2d_oracle_generation
+        ${catkin_LIBRARIES}
+        ${Boost_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+        )
 
 #############
 ## Install ##

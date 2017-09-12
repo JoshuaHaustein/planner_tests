@@ -4,7 +4,7 @@ robots:
     filename: ../robots/holonomic_plower.yaml
 objects:
   - name: box
-    filename: ../objects/box.yaml
+    filename: ../objects/octagon.yaml
     static: False
 world_bounds: [-20.0, -20.0, 20.0, 20.0]
 states:
