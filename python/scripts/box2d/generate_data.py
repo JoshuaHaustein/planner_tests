@@ -15,9 +15,12 @@ if __name__ == '__main__':
 
     base_path = args.output_path
     robot_file = args.robot_path
-    scales = [float(x) / 100 for x in range(2, 18, 5)]
-    masses = [float(x) / 100 for x in range(1, 80, 8)]
-    friction_coeffs = [0.02 + float(x) / 100 for x in range(1, 30, 6)]
+    scales = [float(x) / 100 for x in range(4, 19, 3)]
+    # scales = [0.04, 0.18]
+    masses = [float(x) / 100 for x in range(1, 81, 10)]
+    # masses = [0.01, 0.8]
+    friction_coeffs = [0.006 + float(x) / 1000 for x in range(0, 321, 80)]
+    # friction_coeffs = [0.006, 0.32]
     shapes = generate_shapes.get_all_shapes()
     counter = 0
     for shape in shapes:
@@ -32,13 +35,13 @@ if __name__ == '__main__':
                     planning_file = base_path + '/planning_files/' + unique_id + '_plandesc.yaml'
                     generate_yaml.create_planning_yaml_desc(planning_file, world_file)
                     # TODO launch data generator
-                    subprocess.call(['/home/joshua/projects/planning_catkin/devel/lib/planner_tests/box2d_oracle_generation',
-                                     '--output_file', base_path + '/data/' + unique_id + '_',
-                                     '--planning_problem', planning_file,
-                                     '--threads', str(7),
-                                     '--num_samples', str(args.num_samples)])
+                    # subprocess.call(['/home/joshua/projects/planning_catkin/devel/lib/planner_tests/box2d_oracle_generation',
+                    #                  '--output_file', base_path + '/data/' + unique_id + '_',
+                    #                  '--planning_problem', planning_file,
+                    #                  '--threads', str(6),
+                    #                  '--num_samples', str(args.num_samples)])
+                    counter += 1
                     # print object_file
                     # print world_file
                     # print planning_file
-
     print counter

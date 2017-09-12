@@ -2,7 +2,8 @@
 
 class Octaeder:
     def __init__(self):
-        self._points = [[1.0, 0.0, 0.7071, 0.7071, 0, 1, -0.7071, 0.7071, -1, 0, -0.7071, -0.7071, 0, -1, 0.7071, -0.7071]]
+        self._points = [[1.0, 0.0, 0.7071, 0.7071, 0.0, 1.0, -0.7071, 0.7071,
+                         -1.0, 0.0, -0.7071, -0.7071, 0.0, -1.0, 0.7071, -0.7071]]
 
     def get_geometry(self, scale):
         return map(lambda x: map(lambda y: scale * y, x), self._points)

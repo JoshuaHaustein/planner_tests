@@ -26,7 +26,7 @@ struct DataGenerator {
         auto target_object = world->getBox2DObject(problem_desc.target_name);
         std::stringstream header;
         auto aabb = target_object->getLocalAABB();
-        header << ", " << aabb.getWidth() << ", " << aabb.getHeight()
+        header << aabb.getWidth() << ", " << aabb.getHeight()
                << ", " << target_object->getMass()
                << ", " << target_object->getInertia()
                << ", " << target_object->getGroundFriction();

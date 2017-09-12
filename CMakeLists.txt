@@ -15,7 +15,7 @@ find_package(catkin REQUIRED
 ## System dependencies are found with CMake's conventions
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED) # TODO: I do not understand why we need this. Shoudn't this be 'inherited' from box2d_sim_env????
 include(${QT_USE_FILE}) # TODO: maybe because of this?
- find_package(Boost REQUIRED COMPONENTS program_options)
+find_package(Boost REQUIRED COMPONENTS program_options)
 #find_package(Eigen REQUIRED)
 #find_package(OMPL REQUIRED)
 find_package(Threads REQUIRED)
@@ -39,7 +39,7 @@ catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES planner_tests
   CATKIN_DEPENDS sim_env box2d_sim_env manipulation_planning_suite
-  DEPENDS Threads Boost Qt4
+  DEPENDS Threads Boost Qt4 yaml-cpp
 )
 
 ###########
@@ -99,12 +99,14 @@ add_executable(box2d_oracle_generation
    ${QT_LIBRARIES}
    ${Boost_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
+   yaml-cpp
  )
 
 target_link_libraries(box2d_oracle_generation
         ${catkin_LIBRARIES}
         ${Boost_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
+        yaml-cpp
         )
 
 #############
