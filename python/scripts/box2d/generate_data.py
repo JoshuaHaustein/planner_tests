@@ -36,7 +36,7 @@ if __name__ == '__main__':
                     planning_file = base_path + '/planning_files/' + unique_id + '_plandesc.yaml'
                     generate_yaml.create_planning_yaml_desc(planning_file, world_file)
                     print "Executing batch %i of %i." % (counter, total_num_batches)
-                    subprocess.call(['/home/joshua/projects/planning_catkin/devel/lib/planner_tests/box2d_oracle_generation',
+                    subprocess.call(['/home/data/data_collections/planning_catkin/devel/lib/planner_tests/box2d_oracle_generation',
                                      '--output_file', base_path + '/data/' + unique_id + '_',
                                      '--planning_problem', planning_file,
                                      '--threads', str(6),

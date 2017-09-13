@@ -94,20 +94,20 @@ add_executable(box2d_oracle_generation
 # add_dependencies(planner_tests_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(box2d_push_planner
+target_link_libraries(box2d_push_planner
    ${catkin_LIBRARIES}
    ${QT_LIBRARIES}
    ${Boost_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
    yaml-cpp
- )
+)
 
 target_link_libraries(box2d_oracle_generation
-        ${catkin_LIBRARIES}
-        ${Boost_LIBRARIES}
-        ${CMAKE_THREAD_LIBS_INIT}
-        yaml-cpp
-        )
+     ${catkin_LIBRARIES}
+     ${Boost_LIBRARIES}
+     ${CMAKE_THREAD_LIBS_INIT}
+     yaml-cpp
+)
 
 #############
 ## Install ##

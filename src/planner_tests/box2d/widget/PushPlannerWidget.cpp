@@ -35,7 +35,55 @@ PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
     synchUI();
 }
 
-PushPlannerWidget::~PushPlannerWidget() {
+PushPlannerWidget::~PushPlannerWidget() = default;
+
+void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlanningProblemDesc &desc) {
+    static const std::string log_prefix("[planner_tests""box2d""widget::PushPlannerWidget::setPlanningProblem]");
+    auto world = _weak_world.lock();
+    if (!world) {
+        throw std::logic_error("Could not access underlying world!");
+    }
+    auto logger = world->getLogger();
+    // set robot
+    int combo_idx = _robot_selector->findText(QString(desc.robot_name.c_str()));
+    if (combo_idx == -1) {
+        logger->logErr("Could not find robot from problem description", log_prefix);
+    } else {
+        _robot_selector->setCurrentIndex(combo_idx);
+    }
+    // set target
+    combo_idx = _target_selector->findText(QString(desc.target_name.c_str()));
+    if (combo_idx == -1) {
+        logger->logErr("Could not find target from problem description", log_prefix);
+    } else {
+        _target_selector->setCurrentIndex(combo_idx);
+    }
+    // set oracle
+    std::string oracle_name = mps::planner::util::yaml::oracleTypeToString(desc.oracle_type);
+    combo_idx = _oracle_selector->findText(QString(oracle_name.c_str()));
+    if (combo_idx == -1) {
+        logger->logErr("Could not find oracle from problem description", log_prefix);
+    } else {
+        _oracle_selector->setCurrentIndex(combo_idx);
+    }
+    // set world bounds
+    setValue(_min_x_workbounds, desc.x_limits[0]);
+    setValue(_max_x_workbounds, desc.x_limits[1]);
+    setValue(_min_y_workbounds, desc.y_limits[0]);
+    setValue(_max_y_workbounds, desc.y_limits[1]);
+    // set control limits
+    setValue(_max_trans_vel, desc.control_limits.velocity_limits[0]);
+    setValue(_max_rot_vel, desc.control_limits.velocity_limits[2]);
+    setValue(_min_action_duration, desc.control_limits.duration_limits[0]);
+    setValue(_max_action_duration, desc.control_limits.duration_limits[1]);
+    // set planner parameters
+    setValue(_time_out_edit, desc.planning_timeout);
+    setValue(_num_control_samples, desc.num_control_samples); // only for naive version
+    setValue(_t_max_edit, desc.t_max);
+    // set goal region
+    setValue(_goal_x, desc.goal_position[0]);
+    setValue(_goal_y, desc.goal_position[1]);
+    setValue(_goal_radius, desc.goal_region_radius);
 }
 
 void PushPlannerWidget::button_clicked(bool enabled) {
@@ -270,6 +318,12 @@ float PushPlannerWidget::readValue(QLineEdit* text_field, float default_value) {
         return value;
     }
     return default_value;
+}
+
+void PushPlannerWidget::setValue(QLineEdit* text_field, float value) {
+    QString q_string;
+    q_string.setNum(value);
+    text_field->setText(q_string);
 }
 
 int PushPlannerWidget::readIntValue(QLineEdit* text_field, int default_value) {

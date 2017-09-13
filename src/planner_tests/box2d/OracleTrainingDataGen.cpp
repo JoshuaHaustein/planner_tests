@@ -31,6 +31,8 @@ struct DataGenerator {
                << ", " << target_object->getInertia()
                << ", " << target_object->getGroundFriction();
         auto controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
+        using namespace std::placeholders;
+        robot->setController(std::bind(&sim_env::Box2DRobotVelocityController::control, controller, _1, _2, _3, _4, _5));
         mps::planner::pushing::PlanningProblem problem(world, robot, controller, target_object, problem_desc.goal_position);
         problem.oracle_type = problem_desc.oracle_type;
         problem.goal_region_radius = problem_desc.goal_region_radius;

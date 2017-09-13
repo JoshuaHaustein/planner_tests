@@ -19,6 +19,7 @@
 #include <sim_env/Box2DController.h>
 
 #include <mps/planner/pushing/OraclePushPlanner.h>
+#include <mps/planner/util/yaml/OracleParsing.h>
 
 namespace planner_tests {
     namespace box2d {
@@ -28,6 +29,7 @@ namespace planner_tests {
             public:
                 PushPlannerWidget(sim_env::Box2DWorldPtr world, sim_env::Box2DWorldViewerPtr viewer, QWidget* parent=0);
                 ~PushPlannerWidget();
+                void setPlanningProblem(mps::planner::util::yaml::OraclePlanningProblemDesc& desc);
             public slots:
                 void button_clicked(bool enabled);
             private:
@@ -82,6 +84,7 @@ namespace planner_tests {
                 sim_env::Box2DWorldPtr lockWorld();
                 void visualizePlanningProblem(const mps::planner::pushing::PlanningProblem& problem);
                 float readValue(QLineEdit* text_field, float default_value);
+                void setValue(QLineEdit* text_field, float value);
                 int readIntValue(QLineEdit* text_field, int default_value);
                 void startPlanner();
                 void startPlayback();
