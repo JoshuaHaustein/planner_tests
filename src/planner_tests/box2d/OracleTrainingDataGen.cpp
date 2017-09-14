@@ -35,6 +35,7 @@ struct DataGenerator {
         robot->setController(std::bind(&sim_env::Box2DRobotVelocityController::control, controller, _1, _2, _3, _4, _5));
         mps::planner::pushing::PlanningProblem problem(world, robot, controller, target_object, problem_desc.goal_position);
         problem.oracle_type = problem_desc.oracle_type;
+        problem.algorithm_type = problem_desc.algorithm_type;
         problem.goal_region_radius = problem_desc.goal_region_radius;
         problem.workspace_bounds.x_limits = problem_desc.x_limits;
         problem.workspace_bounds.y_limits = problem_desc.y_limits;

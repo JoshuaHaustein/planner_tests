@@ -66,6 +66,14 @@ void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlann
     } else {
         _oracle_selector->setCurrentIndex(combo_idx);
     }
+    // set algorithm
+    std::string algorithm_name = mps::planner::util::yaml::algorithmTypeToString(desc.algorithm_type);
+    combo_idx = _algorithm_selector->findText(QString(algorithm_name.c_str()));
+    if (combo_idx == -1) {
+        logger->logErr("Could not find algorithm from problem description", log_prefix);
+    } else {
+        _algorithm_selector->setCurrentIndex(combo_idx);
+    }
     // set world bounds
     setValue(_min_x_workbounds, desc.x_limits[0]);
     setValue(_max_x_workbounds, desc.x_limits[1]);
@@ -186,14 +194,18 @@ void PushPlannerWidget::buildUI() {
     layout->addWidget(_min_action_duration, 4, 3);
     _max_action_duration = new QLineEdit(QString("1.0"));
     layout->addWidget(_max_action_duration, 4, 4);
-    // Oracle selector
-    label = new QLabel("Oracle type:");
+    // Oracle and algorithm selector
+    label = new QLabel("Algorithm and oracle type");
     layout->addWidget(label, 5, 2);
+    _algorithm_selector = new QComboBox();
+    _algorithm_selector->addItem("Naive", mps::planner::pushing::PlanningProblem::AlgorithmType::Naive);
+    _algorithm_selector->addItem("OracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::OracleRRT);
+    _algorithm_selector->addItem("SliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::SliceOracleRRT);
+    layout->addWidget(_algorithm_selector, 5, 3);
     _oracle_selector = new QComboBox();
-    _oracle_selector->addItem("None", mps::planner::pushing::PlanningProblem::OracleType::None);
     _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);
     _oracle_selector->addItem("Learned", mps::planner::pushing::PlanningProblem::OracleType::Learned);
-    layout->addWidget(_oracle_selector, 5, 3);
+    layout->addWidget(_oracle_selector, 5, 4);
     ////////////////////////////////////////////////////////////
     ////////////////////// Bottom button ///////////////////////
     // start button
@@ -270,10 +282,14 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
     bool ok = true;
     int enum_value = _oracle_selector->itemData(_oracle_selector->currentIndex()).toInt(&ok);
     if (not ok) {
-        enum_value = mps::planner::pushing::PlanningProblem::OracleType::None;
-    } else {
-        pp.oracle_type = mps::planner::pushing::PlanningProblem::OracleType(enum_value);
+        enum_value = mps::planner::pushing::PlanningProblem::OracleType::Human;
     }
+    pp.oracle_type = mps::planner::pushing::PlanningProblem::OracleType(enum_value);
+    enum_value = _algorithm_selector->itemData(_algorithm_selector->currentIndex()).toInt(&ok);
+    if (not ok) {
+        enum_value = mps::planner::pushing::PlanningProblem::AlgorithmType::Naive;
+    }
+    pp.algorithm_type = mps::planner::pushing::PlanningProblem::AlgorithmType(enum_value);
 }
 
 sim_env::Box2DWorldPtr PushPlannerWidget::lockWorld() {

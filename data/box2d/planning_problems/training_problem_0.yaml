@@ -15,4 +15,5 @@ t_max: 1.0
 goal_position: [1.0, 0.0, 0.0]
 goal_region_radius: 0.14
 oracle_type: Human
+algorithm_type: SliceOracleRRT
 num_control_samples: 2
