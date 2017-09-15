@@ -1,0 +1,19 @@
+world_file: ../worlds/door_world_2m_3s.yaml
+robot_name: robot
+target_name: box
+x_limits: [-1.0, 2.0]
+y_limits: [-0.3, 0.8]
+z_limits: [0.0, 0.0]
+max_velocity: 1.0
+max_rotation_vel: 1.0
+planning_timeout: 180.0
+control_limits:
+  velocity_limits: [0.6, 0.6, 1.4]
+  acceleration_limits: [2, 4, 1.4]
+  duration_limits: [0.05, 0.6]
+t_max: 8.0
+goal_position: [1.6, 0.25, 0.0]
+goal_region_radius: 0.1
+oracle_type: Human
+algorithm_type: SliceOracleRRT
+num_control_samples: 2
