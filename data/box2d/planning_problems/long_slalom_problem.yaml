@@ -17,3 +17,6 @@ goal_region_radius: 0.1
 oracle_type: Human
 algorithm_type: SliceOracleRRT
 num_control_samples: 2
+goal_bias: 0.1
+target_bias: 0.1
+robot_bias: 0.1

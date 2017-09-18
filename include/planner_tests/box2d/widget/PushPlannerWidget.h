@@ -51,7 +51,7 @@ namespace planner_tests {
                 // drawing handles
                 std::vector<sim_env::WorldViewer::Handle> _drawing_handles;
                 // input widgets
-                // first column group (1, 2)
+                // first column group (0, 1)
                 QComboBox* _robot_selector;
                 QComboBox* _target_selector;
                 QLineEdit* _time_out_edit;
@@ -59,7 +59,7 @@ namespace planner_tests {
                 QCheckBox* _debug_check_box;
                 QLineEdit* _t_max_edit;
                 QLineEdit* _num_control_samples;
-                // second column group (3, 4, 5)
+                // second column group (2, 3, 4)
                 QLineEdit* _min_x_workbounds;
                 QLineEdit* _max_x_workbounds;
                 QLineEdit* _min_y_workbounds;
@@ -70,10 +70,13 @@ namespace planner_tests {
                 QLineEdit* _max_action_duration;
                 QComboBox* _oracle_selector;
                 QComboBox* _algorithm_selector;
-                // columns 3, 4, 5, 6
                 QLineEdit* _goal_x;
                 QLineEdit* _goal_y;
                 QLineEdit* _goal_radius;
+                QLineEdit* _goal_bias;
+                // third column group (5, 6)
+                QLineEdit* _robot_bias;
+                QLineEdit* _target_bias;
                 // all columns
                 QPushButton* _start_button;
                 QPushButton* _play_back_button;

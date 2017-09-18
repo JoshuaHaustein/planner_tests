@@ -92,6 +92,8 @@ void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlann
     setValue(_goal_x, desc.goal_position[0]);
     setValue(_goal_y, desc.goal_position[1]);
     setValue(_goal_radius, desc.goal_region_radius);
+    // set biases
+
 }
 
 void PushPlannerWidget::button_clicked(bool enabled) {
@@ -118,94 +120,125 @@ void PushPlannerWidget::buildUI() {
     // create robot selector
     ////////////////////////////////////////////////////////////
     ////////////////////// First column ////////////////////////
+    unsigned int row = 0;
+    unsigned int col = 0;
     QLabel* label = new QLabel("Robot");
     _robot_selector = new QComboBox();
-    layout->addWidget(label, 0, 0);
-    layout->addWidget(_robot_selector, 0, 1);
+    layout->addWidget(label, row, col);
+    layout->addWidget(_robot_selector, row, col + 1);
+    ++row;
     // create target selector
     label = new QLabel("Target");
     _target_selector = new QComboBox();
-    layout->addWidget(label, 1, 0);
-    layout->addWidget(_target_selector, 1, 1);
+    layout->addWidget(label, row, col);
+    layout->addWidget(_target_selector, row, col + 1);
+    ++row;
     // create time out edit
     label = new QLabel("Time out");
     _time_out_edit = new QLineEdit();
     _time_out_edit->setText("60.0");
-    layout->addWidget(label, 2, 0);
-    layout->addWidget(_time_out_edit, 2, 1);
+    layout->addWidget(label, row, col);
+    layout->addWidget(_time_out_edit, row, col + 1);
+    ++row;
     // create semi-dynamic tick box
     _semi_dynamic_check_box = new QCheckBox();
     _semi_dynamic_check_box->setText("Semi-dynamic");
     _semi_dynamic_check_box->setChecked(true);
-    layout->addWidget(_semi_dynamic_check_box, 3, 0, 1, 1);
+    layout->addWidget(_semi_dynamic_check_box, row, col, 1, 1);
     // create debug tick box
     _debug_check_box = new QCheckBox();
     _debug_check_box->setText("Debug");
     _debug_check_box->setChecked(true);
-    layout->addWidget(_debug_check_box, 3, 1, 1, 1);
+    layout->addWidget(_debug_check_box, row, col + 1, 1, 1);
+    ++row;
     // t_max line edit
     label = new QLabel("T_max");
     _t_max_edit = new QLineEdit();
     _t_max_edit->setText("8.0");
-    layout->addWidget(label, 4, 0);
-    layout->addWidget(_t_max_edit, 4, 1);
+    layout->addWidget(label, row, col);
+    layout->addWidget(_t_max_edit, row, col + 1);
+    ++row;
     // num_control_samples
     label = new QLabel("Num control samples (k)");
     _num_control_samples = new QLineEdit();
     _num_control_samples->setText("10");
-    layout->addWidget(label, 5, 0);
-    layout->addWidget(_num_control_samples, 5, 1);
+    layout->addWidget(label, row, col);
+    layout->addWidget(_num_control_samples, row, col + 1);
     ////////////////////////////////////////////////////////////
     ////////////////////// Second column (2 - 4) ///////////////
+    row = 0;
+    col = 2;
     // goal settings
-    label = new QLabel("Goal region (x, y, r):");
-    layout->addWidget(label, 0, 2);
+    label = new QLabel("Goal region (x, y):");
+    layout->addWidget(label, row, col);
     _goal_x = new QLineEdit(QString("1.0"));
-    layout->addWidget(_goal_x, 0, 3);
+    layout->addWidget(_goal_x, row, col + 1);
     _goal_y = new QLineEdit(QString("1.0"));
-    layout->addWidget(_goal_y, 0, 4);
+    layout->addWidget(_goal_y, row, col + 2);
+    ++row;
+    // Goal radius and bias
+    label = new QLabel("Goal radius and bias");
+    layout->addWidget(label, row, col);
     _goal_radius = new QLineEdit(QString("0.1"));
-    layout->addWidget(_goal_radius, 0, 5);
+    layout->addWidget(_goal_radius, row, col + 1);
+    _goal_bias = new QLineEdit(QString("0.1"));
+    layout->addWidget(_goal_bias, row, col + 2);
+    ++row;
     // Workspace bounds for x
     label = new QLabel("Workspace bounds x (min, max):");
-    layout->addWidget(label, 1, 2);
+    layout->addWidget(label, row, col);
     _min_x_workbounds = new QLineEdit(QString("-2.0"));
-    layout->addWidget(_min_x_workbounds, 1, 3);
+    layout->addWidget(_min_x_workbounds, row, col + 1);
     _max_x_workbounds = new QLineEdit(QString("2.0"));
-    layout->addWidget(_max_x_workbounds, 1, 4);
+    layout->addWidget(_max_x_workbounds, row, col + 2);
+    ++row;
     // Workspace bounds for y
     label = new QLabel("Workspace bounds y (min, max):");
-    layout->addWidget(label, 2, 2);
+    layout->addWidget(label, row, col);
     _min_y_workbounds = new QLineEdit(QString("-2.0"));
-    layout->addWidget(_min_y_workbounds, 2, 3);
+    layout->addWidget(_min_y_workbounds, row, col + 1);
     _max_y_workbounds = new QLineEdit(QString("2.0"));
-    layout->addWidget(_max_y_workbounds, 2, 4);
+    layout->addWidget(_max_y_workbounds, row, col + 2);
+    ++row;
     // Control velocity limits
     label = new QLabel("Control velocity limits (trans, rot)");
-    layout->addWidget(label, 3, 2);
+    layout->addWidget(label, row, col);
     _max_trans_vel = new QLineEdit(QString("0.6"));
-    layout->addWidget(_max_trans_vel, 3, 3);
+    layout->addWidget(_max_trans_vel, row, col + 1);
     _max_rot_vel = new QLineEdit(QString("1.4"));
-    layout->addWidget(_max_rot_vel, 3, 4);
+    layout->addWidget(_max_rot_vel, row, col + 2);
+    ++row;
     // Action duration
     label = new QLabel("Action duration (min, max):");
-    layout->addWidget(label, 4, 2);
+    layout->addWidget(label, row, col);
     _min_action_duration = new QLineEdit(QString("0.05"));
-    layout->addWidget(_min_action_duration, 4, 3);
+    layout->addWidget(_min_action_duration, row, col + 1);
     _max_action_duration = new QLineEdit(QString("1.0"));
-    layout->addWidget(_max_action_duration, 4, 4);
+    layout->addWidget(_max_action_duration, row, col + 2);
+    ++row;
     // Oracle and algorithm selector
     label = new QLabel("Algorithm and oracle type");
-    layout->addWidget(label, 5, 2);
+    layout->addWidget(label, row, col);
     _algorithm_selector = new QComboBox();
     _algorithm_selector->addItem("Naive", mps::planner::pushing::PlanningProblem::AlgorithmType::Naive);
     _algorithm_selector->addItem("OracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::OracleRRT);
     _algorithm_selector->addItem("SliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::SliceOracleRRT);
-    layout->addWidget(_algorithm_selector, 5, 3);
+    layout->addWidget(_algorithm_selector, row, col + 1);
     _oracle_selector = new QComboBox();
     _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);
     _oracle_selector->addItem("Learned", mps::planner::pushing::PlanningProblem::OracleType::Learned);
-    layout->addWidget(_oracle_selector, 5, 4);
+    layout->addWidget(_oracle_selector, row, col + 2);
+    ///////////////////////////// Columns (5, 6 and 7) //////////////////////
+    col = 5;
+    row = 0;
+    // Goal and robot bias
+    label = new QLabel(QString("Target and robot bias: "));
+    layout->addWidget(label, row, col);
+    _target_bias = new QLineEdit(QString("0.1"));
+    layout->addWidget(_target_bias, row, col + 1);
+    _robot_bias = new QLineEdit(QString("0.1"));
+    layout->addWidget(_robot_bias, row, col + 2);
+    ++row;
     ////////////////////////////////////////////////////////////
     ////////////////////// Bottom button ///////////////////////
     // start button
@@ -261,6 +294,10 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
     pp.workspace_bounds.z_limits[1] = 0.0f;
     // time out
     pp.planning_time_out = readValue(_time_out_edit, 60.0f);
+    // biases
+    pp.robot_bias = readValue(_robot_bias, 0.1f);
+    pp.target_bias = readValue(_target_bias, 0.1f);
+    pp.goal_bias = readValue(_goal_bias, 0.1f);
     // control bounds
     auto vel_limits = pp.robot->getDOFVelocityLimits();
     pp.control_limits.velocity_limits.resize(vel_limits.rows());
