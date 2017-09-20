@@ -1,0 +1,40 @@
+scale: 10.0
+robots:
+  - name: robot
+    filename: ../robots/holonomic_plower.yaml
+objects:
+  - name: box
+    filename: ../objects/box.yaml
+    static: False
+  - name: obstacle
+    filename: ../objects/wall.yaml
+    static: False
+  - name: wall_1
+    filename: ../objects/wall.yaml
+    static: True
+  - name: wall_2
+    filename: ../objects/wall.yaml
+    static: True
+world_bounds: [-20.0, -20.0, 20.0, 20.0]
+states:
+  - name: robot
+    state:
+      configuration: [0.0, 0.0, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box
+    state:
+      configuration: [0.3, 0.2, -1.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: obstacle
+    state:
+      configuration: [0.5, 0.2, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: wall_1
+    state:
+      configuration: [0.7, 0.3, 1.57]
+      velocity: [0.0, 0.0, 0.0]
+  - name: wall_2
+    state:
+      configuration: [1.2, -0.2, 1.57]
+      velocity: [0.0, 0.0, 0.0]
+

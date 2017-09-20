@@ -44,6 +44,7 @@ namespace planner_tests {
                 };
 
                 PlannerThread _planner_thread;
+                mps::planner::ompl::state::SimEnvValidityChecker::CollisionPolicy _collision_policy;
                 sim_env::Box2DWorldWeakPtr _weak_world;
                 sim_env::Box2DRobotVelocityControllerPtr _robot_controller;
                 std::map<std::string, sim_env::Box2DRobotVelocityControllerPtr> _velocity_controllers;
@@ -77,6 +78,8 @@ namespace planner_tests {
                 // third column group (5, 6)
                 QLineEdit* _robot_bias;
                 QLineEdit* _target_bias;
+                QCheckBox* _static_col_allowed;
+                QLineEdit* _static_col_blacklist;
                 // all columns
                 QPushButton* _start_button;
                 QPushButton* _play_back_button;

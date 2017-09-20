@@ -93,6 +93,18 @@ void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlann
     setValue(_goal_y, desc.goal_position[1]);
     setValue(_goal_radius, desc.goal_region_radius);
     // set biases
+    setValue(_goal_bias, desc.goal_bias);
+    setValue(_target_bias, desc.target_bias);
+    setValue(_robot_bias, desc.robot_bias);
+    // set collision policy
+    _static_col_allowed->setChecked(desc.collision_policy.static_collisions_allowed);
+    for (auto& obj_name : desc.collision_policy.static_collisions_blacklist) {
+        QString new_text;
+        new_text.fromStdString(obj_name);
+        new_text.prepend(',');
+        _static_col_blacklist->text().append(new_text);
+    }
+    // TODO also provide object-object collision pairs
 
 }
 
@@ -239,6 +251,12 @@ void PushPlannerWidget::buildUI() {
     _robot_bias = new QLineEdit(QString("0.1"));
     layout->addWidget(_robot_bias, row, col + 2);
     ++row;
+    label = new QLabel(QString("Static collisions blacklist"));
+    layout->addWidget(label, row, col);
+    _static_col_allowed = new QCheckBox(QString("Allow static col"));
+    layout->addWidget(_static_col_allowed, row, col+1);
+    _static_col_blacklist = new QLineEdit("robot");
+    layout->addWidget(_static_col_blacklist, row, col + 2);
     ////////////////////////////////////////////////////////////
     ////////////////////// Bottom button ///////////////////////
     // start button
@@ -327,6 +345,19 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
         enum_value = mps::planner::pushing::PlanningProblem::AlgorithmType::Naive;
     }
     pp.algorithm_type = mps::planner::pushing::PlanningProblem::AlgorithmType(enum_value);
+    // collision policy
+    pp.collision_policy.setStaticCollisions(_static_col_allowed->isChecked());
+    // parse black list
+    auto blacklist = _static_col_blacklist->text().split(',');
+    for (auto& obj_name : blacklist) {
+        auto object = pp.world->getObject(obj_name.toStdString(), false);
+        if (object) {
+            pp.collision_policy.setStaticCollisions(obj_name.toStdString(), false);
+        } else {
+            pp.world->getLogger()->logErr("Could not add an object with name " + obj_name.toStdString() +
+                                          " to the collision policy blacklist. The object does not exist.", "[PushPlannerWidget]");
+        }
+    }
 }
 
 sim_env::Box2DWorldPtr PushPlannerWidget::lockWorld() {

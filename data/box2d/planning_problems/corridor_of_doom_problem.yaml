@@ -1,0 +1,26 @@
+world_file: ../worlds/corridor_of_doom_1m_1s.yaml
+robot_name: robot
+target_name: ball
+x_limits: [-0.5, 0.5]
+y_limits: [-0.2, 1.0]
+z_limits: [0.0, 0.0]
+max_velocity: 1.0
+max_rotation_vel: 1.0
+planning_timeout: 60.0
+control_limits:
+  velocity_limits: [0.6, 0.6, 1.4]
+  acceleration_limits: [2, 4, 1.4]
+  duration_limits: [0.05, 0.6]
+t_max: 12.0
+goal_position: [0.0, 0.60, 0.0]
+goal_region_radius: 0.05
+oracle_type: Human
+algorithm_type: SliceOracleRRT
+goal_bias: 0.1
+target_bias: 0.1
+robot_bias: 0.1
+num_control_samples: 2
+collision_policy:
+  static_collisions_allowed: false
+  static_collisions_blacklist: [robot]
+  collisions_blacklist: []

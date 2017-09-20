@@ -1,0 +1,25 @@
+scale: 10.0
+robots:
+  - name: robot
+    filename: ../robots/holonomic_plower.yaml
+objects:
+  - name: ball
+    filename: ../objects/octagon.yaml
+    static: False
+  - name: corridor
+    filename: ../objects/thin_horseshoe.yaml
+    static: True
+world_bounds: [-0.5, -0.2, 0.5, 1]
+states:
+  - name: robot
+    state:
+      configuration: [0.0, 0.0, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: ball
+    state:
+      configuration: [0.0, 0.17, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: corridor
+    state:
+      configuration: [-0.07, 0.3, 0.0]
+      velocity: [0.0, 0.0, 0.0]
