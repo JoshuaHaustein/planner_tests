@@ -1,0 +1,91 @@
+name: robot_arm
+base_actuation:
+  translational_velocity_limits: [-1.0, 1.0]
+  translational_acceleration_limits: [-1, 1]
+  rotational_velocity_limits: [-1.0, 1.0]
+  rotational_acceleration_limits: [-1.4, 1.4]
+  use_center_of_mass: false
+links:
+  - name: link_0
+    geometry:
+      - [-0.08, -0.04, 0.08, -0.04, 0.08, 0.0, -0.08, 0.0]
+    mass: 1.1
+    trans_friction: 0.01
+    rot_friction: 0.0001
+    restitution: 1.0
+    contact_friction: 0.1
+  - name: link_1
+    geometry:
+      - [-0.02, 0.0, 0.02, 0.0, 0.02, 0.1, -0.02, 0.1]
+    mass: 0.00001
+    trans_friction: 0.0
+    rot_friction: 0.0
+    restitution: 1.0
+    contact_friction: 0.1
+  - name: link_2
+    geometry:
+      - [-0.02, 0.0, 0.02, 0.0, 0.02, 0.1, -0.02, 0.1]
+    mass: 0.00001
+    trans_friction: 0.0
+    rot_friction: 0.0
+    restitution: 1.0
+    contact_friction: 0.1
+  - name: link_3
+    geometry:
+      - [-0.02, 0.0, 0.02, 0.0, 0.02, 0.1, -0.02, 0.1]
+    mass: 0.00001
+    trans_friction: 0.0
+    rot_friction: 0.0
+    restitution: 1.0
+    contact_friction: 0.1
+  - name: link_4
+    geometry:
+      - [-0.06, 0.0, 0.06, 0.0, 0.06, 0.02, -0.06, 0.02]
+      - [0.04, 0.02, 0.06, 0.02, 0.06, 0.06, 0.04, 0.06]
+      - [-0.06, 0.02, -0.04, 0.02, -0.04, 0.06, -0.06, 0.06]
+    mass: 0.00001
+    trans_friction: 0.0
+    rot_friction: 0.0
+    restitution: 1.0
+    contact_friction: 0.1
+joints:
+  - name: joint_0
+    link_a: link_0
+    link_b: link_1
+    axis: [0.0, 0.0]
+    axis_orientation: 0.0
+    position_limits: [-1.05, 1.05]
+    velocity_limits: [-10.0, 10.0]
+    acceleration_limits: [-20.0, 20.0]
+    joint_type: revolute
+    actuated: True
+  - name: joint_1
+    link_a: link_1
+    link_b: link_2
+    axis: [0.0, 0.1]
+    axis_orientation: 0.0
+    position_limits: [-1.05, 1.05]
+    velocity_limits: [-10.0, 10.0]
+    acceleration_limits: [-20.0, 20.0]
+    joint_type: revolute
+    actuated: True
+  - name: joint_2
+    link_a: link_2
+    link_b: link_3
+    axis: [0.0, 0.1]
+    axis_orientation: 0.0
+    position_limits: [-1.05, 1.05]
+    velocity_limits: [-10.0, 10.0]
+    acceleration_limits: [-20.0, 20.0]
+    joint_type: revolute
+    actuated: True
+  - name: joint_3
+    link_a: link_3
+    link_b: link_4
+    axis: [0.0, 0.1]
+    axis_orientation: 0.0
+    position_limits: [-1.05, 1.05]
+    velocity_limits: [-10.0, 10.0]
+    acceleration_limits: [-20.0, 20.0]
+    joint_type: revolute
+    actuated: True

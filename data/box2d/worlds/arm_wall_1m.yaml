@@ -1,0 +1,26 @@
+scale: 10.0
+robots:
+  - name: robot
+    filename: ../robots/test_arm.yaml
+    static: True
+objects:
+  - name: box
+    filename: ../objects/box.yaml
+    static: False
+  - name: wall
+    filename: ../objects/wall.yaml
+    static: True
+world_bounds: [-2.0, -2.0, 2.0, 2.0]
+states:
+  - name: robot
+    state:
+      configuration: [0.0, 0.0, 0.0, 0.0, 0.0]
+      velocity: [0.0, 0.0, 0.0, 0.0, 0.0]
+  - name: box
+    state:
+      configuration: [0.3, 0.2, -1.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: wall
+    state:
+      configuration: [-0.3, 0.9, 0.0]
+      velocity: [0.0, 0.0, 0.0]

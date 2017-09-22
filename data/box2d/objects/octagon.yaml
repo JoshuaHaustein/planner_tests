@@ -1,0 +1,12 @@
+joints: []
+links:
+- contact_friction: 1.5
+  geometry:
+  - [0.04, 0.0, 0.028284, 0.028284, 0.0, 0.04, -0.028284, 0.028284, -0.04, 0.0, -0.028284,
+    -0.028284, 0.0, -0.04, 0.028284, -0.028284]
+  mass: 0.01
+  name: octagon_link
+  restitution: 1.0
+  rot_friction: 0.00207
+  trans_friction: 0.0046
+name: octagon
