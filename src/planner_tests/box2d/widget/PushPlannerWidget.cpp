@@ -16,7 +16,7 @@ void PushPlannerWidget::PlannerThread::plan() {
 
 void PushPlannerWidget::PlannerThread::playback() {
     if (solution.solved) {
-        planner.playback(solution);
+        planner.playback(solution, std::bind(&PushPlannerWidget::PlannerThread::isInterrupted, this));
     }
 }
 
@@ -235,6 +235,7 @@ void PushPlannerWidget::buildUI() {
     _algorithm_selector->addItem("Naive", mps::planner::pushing::PlanningProblem::AlgorithmType::Naive);
     _algorithm_selector->addItem("OracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::OracleRRT);
     _algorithm_selector->addItem("SliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::SliceOracleRRT);
+    _algorithm_selector->addItem("CompleteSliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::CompleteSliceOracleRRT);
     layout->addWidget(_algorithm_selector, row, col + 1);
     _oracle_selector = new QComboBox();
     _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);
