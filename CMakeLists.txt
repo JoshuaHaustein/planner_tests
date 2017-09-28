@@ -19,6 +19,7 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 #find_package(Eigen REQUIRED)
 #find_package(OMPL REQUIRED)
 find_package(Threads REQUIRED)
+find_package(Protobuf REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -99,6 +100,8 @@ target_link_libraries(box2d_push_planner
    ${QT_LIBRARIES}
    ${Boost_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
+   ${PROTOBUF_LIBRARY}
+#   proto
    yaml-cpp
 )
 
@@ -106,6 +109,8 @@ target_link_libraries(box2d_oracle_generation
      ${catkin_LIBRARIES}
      ${Boost_LIBRARIES}
      ${CMAKE_THREAD_LIBS_INIT}
+     ${PROTOBUF_LIBRARY}
+#     proto
      yaml-cpp
 )
 
