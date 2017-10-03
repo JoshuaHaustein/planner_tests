@@ -76,7 +76,7 @@ def create_planning_yaml_desc(file_name, world_path):
         'goal_position': [1.0, 1.0, 0.0],
         'goal_region_radius': 0.1,
         'oracle_type': 'Human',
-        'algorithm_type': 'SliceBasedRRT',
+        'algorithm_type': 'SliceOracleRRT',
         'goal_bias': 0.1,
         'target_bias': 0.01,
         'robot_bias': 0.01,
