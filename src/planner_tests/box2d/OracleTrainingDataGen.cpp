@@ -64,12 +64,14 @@ struct ObjectFilter {
 
 int main(int argc, const char* const* argv) {
     // declare program options
+    bool verbose = false;
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "Show help message")
             ("output_file", po::value<std::string>(), "path to file where to write results to")
             ("planning_problem", po::value<std::string>(), "yaml file containing a planning problem definition")
             ("num_samples", po::value<unsigned int>()->default_value(1000), "number of samples")
+            ("verbose", po::bool_switch(&verbose), "Set whether debug outputs should be printed")
             ("threads", po::value<unsigned int>()->default_value(1), "number of threads");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -123,6 +125,9 @@ int main(int argc, const char* const* argv) {
         data_generator.problem_desc = planning_desc;
         data_generator.world = std::make_shared<sim_env::Box2DWorld>();
         data_generator.world->loadWorld(env_desc);
+        if (verbose) {
+            data_generator.world->getLogger()->setLevel(sim_env::Logger::LogLevel::Debug);
+        }
         data_generator.thread = std::thread(std::bind(&DataGenerator::run, std::ref(data_generator)));
     }
 //    auto viewer = data_generators[0].world->getViewer();
