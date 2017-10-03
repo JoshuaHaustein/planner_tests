@@ -9,7 +9,7 @@ max_rotation_vel: 1.0
 planning_timeout: 60.0
 control_limits:
   velocity_limits: [0.6, 0.6, 1.4]
-  acceleration_limits: [1.0, 1.0, 1.0]
+  acceleration_limits: [1.0, 1.0, 1.4]
   duration_limits: [0.0, 0.6]
 collision_policy:
   static_collisions_allowed: true
