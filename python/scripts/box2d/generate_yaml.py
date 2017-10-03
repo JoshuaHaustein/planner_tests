@@ -66,12 +66,20 @@ def create_planning_yaml_desc(file_name, world_path):
         'planning_timeout': 60.0,
         'control_limits': {'velocity_limits': [0.6, 0.6, 1.4],
                            'acceleration_limits': [2, 2, 1.4],
-                           'duration_limits': [0.05, 0.8]
+                           'duration_limits': [0.0, 0.6]
                            },
+        'collision_policy': {'static_collisions_allowed': True,
+                             'static_collisions_blacklist': ['robot'],
+                             'collisions_blacklist': []
+                             },
         't_max': 8.0,
         'goal_position': [1.0, 1.0, 0.0],
         'goal_region_radius': 0.1,
         'oracle_type': 'None',
+        'algorithm_type': 'SliceBasedRRT',
+        'goal_bias': 0.1,
+        'target_bias': 0.01,
+        'robot_bias': 0.01,
         'num_control_samples': 1
     }
     a_file = open(file_name, 'w')
