@@ -54,11 +54,13 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 add_definitions(${QT_DEFINITIONS})
 
-set (MOC_HEADERS include/planner_tests/box2d/widget/PushPlannerWidget.h)
+set (MOC_HEADERS include/planner_tests/box2d/widget/PushPlannerWidget.h
+        include/planner_tests/box2d/widget/SliceWidget.h)
 QT4_WRAP_CPP( MOC_SRCS ${MOC_HEADERS})
 set(PUSH_PLANNER_SRC
         src/planner_tests/box2d/PushPlanner.cpp
-        src/planner_tests/box2d/widget/PushPlannerWidget.cpp)
+        src/planner_tests/box2d/widget/PushPlannerWidget.cpp
+        src/planner_tests/box2d/widget/SliceWidget.cpp)
 
 set(ORACLE_TRAINING_DATA_SRC
         src/planner_tests/box2d/OracleTrainingDataGen.cpp)

@@ -3,6 +3,7 @@
 //
 
 #include <planner_tests/box2d/widget/PushPlannerWidget.h>
+#include <planner_tests/box2d/widget/SliceWidget.h>
 #include <QtGui/QGridLayout>
 #include <QtGui/QLabel>
 #include <sim_env/Box2DController.h>
@@ -33,6 +34,9 @@ PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
     _weak_viewer = viewer;
     buildUI();
     synchUI();
+    auto slice_widget = new widget::SliceWidget(world);
+    viewer->addCustomWidget(slice_widget, "Slice Debug Widget");
+    _slice_drawer = slice_widget->getSliceDrawer();
 }
 
 PushPlannerWidget::~PushPlannerWidget() = default;
@@ -438,6 +442,7 @@ void PushPlannerWidget::startPlanner() {
                                                                 goal_position);
         configurePlanningProblem(planning_problem);
         _planner_thread.planner.setup(planning_problem);
+        _planner_thread.planner.setSliceDrawer(_slice_drawer);
         visualizePlanningProblem(planning_problem);
         _planner_thread.interrrupt = false;
         _planner_thread.thread = std::thread(&PlannerThread::plan, std::ref(_planner_thread));

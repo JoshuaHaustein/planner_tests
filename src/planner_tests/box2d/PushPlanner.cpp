@@ -8,8 +8,6 @@
 #include <mps/planner/pushing/OraclePushPlanner.h>
 #include <planner_tests/box2d/widget/PushPlannerWidget.h>
 #include <mps/planner/util/yaml/OracleParsing.h>
-#include <vector>
-#include <functional>
 
 using namespace planner_tests::box2d;
 namespace po = boost::program_options;
