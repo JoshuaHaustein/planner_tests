@@ -14,6 +14,7 @@ SliceWidget::SliceWidget(sim_env::Box2DWorldPtr world, QWidget *parent) :
     auto *m = selectionModel();
     setModel(_table_model);
     delete m;
+    QObject::connect(this, SIGNAL(clicked(const QModelIndex&)), this, SLOT(myItemClicked(const QModelIndex&)));
 }
 
 SliceWidget::~SliceWidget() {
@@ -29,10 +30,28 @@ mps::planner::pushing::algorithm::SliceDrawerInterfacePtr SliceWidget::getSliceD
     return _slice_drawer;
 }
 
+void SliceWidget::myItemClicked(const QModelIndex& index) {
+    if (!_slice_drawer) return;
+    if (index.row() >= 0 and index.row() < _table_model->_slices.size()) {
+        assert(_selected_slice);
+        _slice_drawer->sliceSelected(_selected_slice, _state_idx);
+        _state_idx = (unsigned int)((_state_idx + 1) % _selected_slice->slice_samples_list.size());
+    }
+}
+
 void SliceWidget::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
-    if (not selected.first().indexes().isEmpty()) {
-        int slice_idx = selected.first().indexes().first().row();
-        _slice_drawer->sliceSelected(_table_model->_slices.at(slice_idx));
+    QTableView::selectionChanged(selected, deselected);
+    if (!_slice_drawer) return;
+    if (not selected.isEmpty()) {
+        if (not selected.first().indexes().isEmpty()) {
+            int slice_idx = selected.first().indexes().first().row();
+            _selected_slice = _table_model->_slices.at(slice_idx);
+            _state_idx = 0;
+            _slice_drawer->sliceSelected(_selected_slice, _state_idx);
+        }
+    } else {
+        _selected_slice = nullptr;
+        _slice_drawer->noSliceSelected();
     }
 }
 
@@ -78,12 +97,36 @@ void SliceWidget::ListSliceDrawer::addSlice(
 }
 
 void SliceWidget::ListSliceDrawer::sliceSelected(
-        mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice) {
+        mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice,
+        unsigned int state_idx) {
     if(_widget) {
         auto world = _widget->getWorld();
-        auto state = dynamic_cast<const mps::planner::ompl::state::SimEnvWorldState*>(slice->repr->getConstState());
+        auto state = dynamic_cast<const mps::planner::ompl::state::SimEnvWorldState*>(slice->slice_samples_list.at(state_idx)->getState());
         _state_space->setToState(world, state);
+        auto debug_drawer = _debug_drawer.lock();
+        if (debug_drawer) {
+            debug_drawer->clear(false);
+            for (auto& motion : slice->slice_samples_list) {
+                debug_drawer->addNewMotion(motion);
+            }
+        }
     }
+}
+
+void SliceWidget::ListSliceDrawer::noSliceSelected() {
+    auto debug_drawer = _debug_drawer.lock();
+    if (_widget) {
+        auto& slices = _widget->_table_model->_slices;
+        if (debug_drawer) {
+            debug_drawer->clear(false);
+            for (auto& slice : slices) {
+                for (auto& motion : slice->slice_samples_list) {
+                    debug_drawer->addNewMotion(motion);
+                }
+            }
+        }
+    }
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

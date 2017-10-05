@@ -25,7 +25,8 @@ namespace planner_tests {
                     ~ListSliceDrawer();
                     void clear() override;
                     void addSlice(mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice) override;
-                    void sliceSelected(mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice);
+                    void sliceSelected(mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice, unsigned int state_idx=0);
+                    void noSliceSelected();
 
                 protected:
                     void detach();
@@ -38,6 +39,8 @@ namespace planner_tests {
                 SliceWidget(sim_env::Box2DWorldPtr world, QWidget* parent=0);
                 ~SliceWidget();
                 mps::planner::pushing::algorithm::SliceDrawerInterfacePtr getSliceDrawer();
+            public slots:
+                void myItemClicked(const QModelIndex& index);
 
             protected:
 
@@ -61,6 +64,8 @@ namespace planner_tests {
             private:
                 sim_env::Box2DWorldPtr _world;
                 std::shared_ptr<ListSliceDrawer> _slice_drawer;
+                unsigned int _state_idx;
+                mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr _selected_slice;
             };
         }
     }
