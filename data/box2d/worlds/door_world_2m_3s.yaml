@@ -30,7 +30,7 @@ states:
       velocity: [0.0, 0.0, 0.0]
   - name: wall_1
     state:
-      configuration: [1.37, 0.36, 0]
+      configuration: [1.37, 0.40, 0]
       velocity: [0.0, 0.0, 0.0]
   - name: wall_2
     state:

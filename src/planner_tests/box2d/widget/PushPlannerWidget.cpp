@@ -397,6 +397,16 @@ void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::Pl
                                                      problem.goal_region_radius,
                                                      Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f),
                                                      0.01f));
+    std::vector<sim_env::ObjectPtr> objects;
+    problem.world->getObjects(objects, true);
+    for (auto& obj : objects) {
+        auto box2d_object = std::dynamic_pointer_cast<sim_env::Box2DObject>(obj);
+        if (obj != problem.target_object) {
+            viewer->getWorldViewer()->resetColor(box2d_object->getName());
+        } else {
+            viewer->getWorldViewer()->setColor(box2d_object->getName(), 0.0f, 1.0f, 0.0);
+        }
+    }
     // TODO whatever else to show
 }
 

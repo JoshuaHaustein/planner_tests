@@ -1,0 +1,53 @@
+scale: 10.0
+robots:
+  - name: robot
+    filename: ../robots/rigid_fingers_robot.yaml
+objects:
+  - name: box_1
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_2
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_3
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_4
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_5
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_6
+    filename: ../objects/box.yaml
+    static: False
+world_bounds: [-0.2, -0.2, 2.0, 0.8]
+states:
+  - name: robot
+    state:
+      configuration: [0.0, 0.0, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_1
+    state:
+      configuration: [0.77, 0.27, -1.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_2
+    state:
+      configuration: [1.74, 0.37, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_3
+    state:
+      configuration: [1.9, 0.37, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_4
+    state:
+      configuration: [1.72, 0.194, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_5
+    state:
+      configuration: [1.72, 0.02, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_6
+    state:
+      configuration: [1.89, 0.02, 0.0]
+      velocity: [0.0, 0.0, 0.0]
