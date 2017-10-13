@@ -26,14 +26,14 @@ def create_yaml_desc(file_name, shape, scale, mass, friction, name):
     afile.close()
 
 
-def create_world_yaml_desc(file_name, robot_path, object_path):
+def create_world_yaml_desc(file_name, robot_path, object_path, object_name='target'):
     root_dict = {'scale': 10.0}
     root_dict['robots'] = [
         {'name': 'robot',
          'filename': robot_path}
     ]
     root_dict['objects'] = [
-        {'name': 'target',
+        {'name': object_name,
          'filename': object_path,
          'static': False}
     ]
@@ -66,7 +66,8 @@ def create_planning_yaml_desc(file_name, world_path):
         'planning_timeout': 60.0,
         'control_limits': {'velocity_limits': [0.6, 0.6, 1.4],
                            'acceleration_limits': [2, 2, 1.4],
-                           'duration_limits': [0.0, 0.6]
+                           'duration_limits': [0.0, 0.6],
+                           'subspaces': [[0, 1]]
                            },
         'collision_policy': {'static_collisions_allowed': True,
                              'static_collisions_blacklist': ['robot'],

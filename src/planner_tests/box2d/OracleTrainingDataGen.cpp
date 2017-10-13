@@ -29,14 +29,15 @@ struct DataGenerator {
         header << aabb.getWidth() << ", " << aabb.getHeight()
                << ", " << target_object->getMass()
                << ", " << target_object->getInertia()
-               << ", " << target_object->getGroundFriction();
+               << ", " << target_object->getGroundFriction()
+               << ", " << target_object->getName();
         auto controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
         using namespace std::placeholders;
         robot->setController(std::bind(&sim_env::Box2DRobotVelocityController::control, controller, _1, _2, _3, _4, _5));
         mps::planner::pushing::PlanningProblem problem(world, robot, controller, target_object, problem_desc.goal_position);
         mps::planner::util::yaml::configurePlanningProblem(problem, problem_desc);
         planner.setup(problem);
-        planner.generateData(output_file, num_samples, header.str());
+        planner.generateData(output_file, num_samples, header.str(), true);
     }
 };
 
