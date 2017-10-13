@@ -331,6 +331,14 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
     // TODO set limits for joint dofs
     pp.control_limits.duration_limits[0] = readValue(_min_action_duration, 0.01f);
     pp.control_limits.duration_limits[1] = readValue(_max_action_duration, 2.5f);
+    // control subspace
+    Eigen::VectorXi translational_dofs(2);
+    translational_dofs.setLinSpaced(0, 1);
+    Eigen::Array2f velocity_norm_limits;
+    velocity_norm_limits[0] = 0.0f;
+    velocity_norm_limits[1] = pp.control_limits.velocity_limits[0];
+    mps::planner::ompl::control::RampVelocityControlSpace::ControlSubspace base_motion_subspace(translational_dofs, velocity_norm_limits);
+    pp.control_subspaces.push_back(base_motion_subspace);
     // stopping condition
     pp.stopping_condition = std::bind(&PlannerThread::isInterrupted, std::ref(_planner_thread));
     // debug
