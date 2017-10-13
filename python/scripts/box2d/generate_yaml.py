@@ -43,7 +43,7 @@ def create_world_yaml_desc(file_name, robot_path, object_path, object_name='targ
          'state': {'configuration': [0.0, 0.0, 0.0],
                    'velocity': [0.0, 0.0, 0.0]}
          },
-        {'name': 'target',
+        {'name': object_name,
          'state': {'configuration': [1.0, 1.0, 0.0],
                    'velocity': [0.0, 0.0, 0.0]}
          }
@@ -53,11 +53,11 @@ def create_world_yaml_desc(file_name, robot_path, object_path, object_name='targ
     a_file.close()
 
 
-def create_planning_yaml_desc(file_name, world_path):
+def create_planning_yaml_desc(file_name, world_path, object_name='target'):
     problem_desc = {
         'world_file': world_path,
         'robot_name': 'robot',
-        'target_name': 'target',
+        'target_name': object_name,
         'x_limits': [-1.5, 1.5],
         'y_limits': [-1.5, 1.5],
         'z_limits': [0.0, 0.0],

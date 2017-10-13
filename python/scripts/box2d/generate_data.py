@@ -47,7 +47,7 @@ def create_auxilary_files(unique_id, base_path, robot_file, shape, scale, mass, 
     world_file = create_world_file_name(unique_id, base_path)
     generate_yaml.create_yaml_desc(object_file, shape, scale, mass, mu, shape.get_name())
     generate_yaml.create_world_yaml_desc(world_file, robot_file, object_file, object_name=shape.get_name())
-    generate_yaml.create_planning_yaml_desc(planning_file, world_file)
+    generate_yaml.create_planning_yaml_desc(planning_file, world_file, object_name=shape.get_name())
 
 
 def generate_data(unique_id, base_path, num_threads, b_overwrite, max_waiting_time, fails_log_file):
