@@ -12,8 +12,8 @@ control_limits:
   acceleration_limits: [2, 4, 1.4]
   duration_limits: [0.05, 0.6]
 collision_policy:
-  static_collisions_allowed: false
-  static_collisions_blacklist: []
+  static_collisions_allowed: true
+  static_collisions_blacklist: [robot]
   collisions_blacklist: []
 t_max: 8.0
 goal_position: [1.6, 0.25, 0.0]

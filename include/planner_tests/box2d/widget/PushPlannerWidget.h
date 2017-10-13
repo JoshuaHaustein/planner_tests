@@ -49,6 +49,7 @@ namespace planner_tests {
                 sim_env::Box2DRobotVelocityControllerPtr _robot_controller;
                 std::map<std::string, sim_env::Box2DRobotVelocityControllerPtr> _velocity_controllers;
                 sim_env::Box2DWorldViewerWeakPtr _weak_viewer;
+                mps::planner::pushing::algorithm::SliceDrawerInterfacePtr _slice_drawer;
                 // drawing handles
                 std::vector<sim_env::WorldViewer::Handle> _drawing_handles;
                 // input widgets

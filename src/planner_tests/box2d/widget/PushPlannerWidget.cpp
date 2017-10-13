@@ -3,6 +3,7 @@
 //
 
 #include <planner_tests/box2d/widget/PushPlannerWidget.h>
+#include <planner_tests/box2d/widget/SliceWidget.h>
 #include <QtGui/QGridLayout>
 #include <QtGui/QLabel>
 #include <sim_env/Box2DController.h>
@@ -33,6 +34,9 @@ PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
     _weak_viewer = viewer;
     buildUI();
     synchUI();
+    auto slice_widget = new widget::SliceWidget(world);
+    viewer->addCustomWidget(slice_widget, "Slice Debug Widget");
+    _slice_drawer = slice_widget->getSliceDrawer();
 }
 
 PushPlannerWidget::~PushPlannerWidget() = default;
@@ -327,6 +331,14 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
     // TODO set limits for joint dofs
     pp.control_limits.duration_limits[0] = readValue(_min_action_duration, 0.01f);
     pp.control_limits.duration_limits[1] = readValue(_max_action_duration, 2.5f);
+    // control subspace
+    Eigen::VectorXi translational_dofs(2);
+    translational_dofs.setLinSpaced(0, 1);
+    Eigen::Array2f velocity_norm_limits;
+    velocity_norm_limits[0] = 0.0f;
+    velocity_norm_limits[1] = pp.control_limits.velocity_limits[0];
+    mps::planner::ompl::control::RampVelocityControlSpace::ControlSubspace base_motion_subspace(translational_dofs, velocity_norm_limits);
+    pp.control_subspaces.push_back(base_motion_subspace);
     // stopping condition
     pp.stopping_condition = std::bind(&PlannerThread::isInterrupted, std::ref(_planner_thread));
     // debug
@@ -393,6 +405,16 @@ void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::Pl
                                                      problem.goal_region_radius,
                                                      Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f),
                                                      0.01f));
+    std::vector<sim_env::ObjectPtr> objects;
+    problem.world->getObjects(objects, true);
+    for (auto& obj : objects) {
+        auto box2d_object = std::dynamic_pointer_cast<sim_env::Box2DObject>(obj);
+        if (obj != problem.target_object) {
+            viewer->getWorldViewer()->resetColor(box2d_object->getName());
+        } else {
+            viewer->getWorldViewer()->setColor(box2d_object->getName(), 0.0f, 1.0f, 0.0);
+        }
+    }
     // TODO whatever else to show
 }
 
@@ -438,6 +460,7 @@ void PushPlannerWidget::startPlanner() {
                                                                 goal_position);
         configurePlanningProblem(planning_problem);
         _planner_thread.planner.setup(planning_problem);
+        _planner_thread.planner.setSliceDrawer(_slice_drawer);
         visualizePlanningProblem(planning_problem);
         _planner_thread.interrrupt = false;
         _planner_thread.thread = std::thread(&PlannerThread::plan, std::ref(_planner_thread));
