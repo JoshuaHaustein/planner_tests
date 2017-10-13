@@ -133,6 +133,7 @@ def generate_list_data(args, max_waiting_time, base_path):
 
 def generate_random_data(args, max_waiting_time, base_path):
     print "Generating data from a random dynamics parameters"
+    num_failures = 0
     for idx in range(0, args.num_random_dynamics):
         (shape, scale, mass, mu) = random_case()
         create_auxilary_files(unique_id='random_data', base_path=base_path,
@@ -143,7 +144,10 @@ def generate_random_data(args, max_waiting_time, base_path):
                                      num_threads=args.num_threads, b_overwrite=True,
                                      max_waiting_time=max_waiting_time,
                                      fails_log_file=args.fails_log_file)
+        if b_run_failed:
+            num_failures += 1
 
+    return num_failures, args.num_random_dynamics
 
 
 if __name__ == '__main__':
