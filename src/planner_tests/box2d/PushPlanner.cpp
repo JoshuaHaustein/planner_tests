@@ -37,7 +37,8 @@ std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim
     if (!target) {
         throw std::runtime_error("Could not find robot " + problem_desc.target_name);
     }
-    mps::planner::pushing::PlanningProblem problem(world, robot, controller, target, problem_desc.goal_position);
+    mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(target->getName(), problem_desc.goal_position, Eigen::Quaternionf());
+    mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_spec);
     problem.oracle_type = problem_desc.oracle_type;
     problem.algorithm_type = problem_desc.algorithm_type;
     problem.goal_region_radius = problem_desc.goal_region_radius;

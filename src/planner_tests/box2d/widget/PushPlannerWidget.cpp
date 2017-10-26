@@ -305,8 +305,8 @@ void PushPlannerWidget::synchUI() {
 
 void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::PlanningProblem& pp) {
     // goal
-    pp.goal_position[0] = readValue(_goal_x, 1.0);
-    pp.goal_position[1] = readValue(_goal_y, 1.0);
+    pp.relocation_goals.at(0).goal_position[0] = readValue(_goal_x, 1.0);
+    pp.relocation_goals.at(0).goal_position[1] = readValue(_goal_y, 1.0);
     pp.goal_region_radius = readValue(_goal_radius, 0.1);
     // workspace bounds
     pp.workspace_bounds.x_limits[0] = readValue(_min_x_workbounds, pp.workspace_bounds.x_limits[0]);
@@ -400,22 +400,21 @@ void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::Pl
     extents[0] = problem.workspace_bounds.x_limits[1] - problem.workspace_bounds.x_limits[0];
     extents[1] = problem.workspace_bounds.y_limits[1] - problem.workspace_bounds.y_limits[0];
     _drawing_handles.emplace_back(viewer->drawBox(pos, extents));
-    // 2. show goal region
-    _drawing_handles.emplace_back(viewer->drawSphere(problem.goal_position,
-                                                     problem.goal_region_radius,
-                                                     Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f),
-                                                     0.01f));
+    // 2. reset colors
     std::vector<sim_env::ObjectPtr> objects;
     problem.world->getObjects(objects, true);
     for (auto& obj : objects) {
         auto box2d_object = std::dynamic_pointer_cast<sim_env::Box2DObject>(obj);
-        if (obj != problem.target_object) {
-            viewer->getWorldViewer()->resetColor(box2d_object->getName());
-        } else {
-            viewer->getWorldViewer()->setColor(box2d_object->getName(), 0.0f, 1.0f, 0.0);
-        }
+        viewer->getWorldViewer()->resetColor(box2d_object->getName());
     }
-    // TODO whatever else to show
+    // 3. also show goal regions
+    for (auto& goal_spec : problem.relocation_goals) {
+        _drawing_handles.emplace_back(viewer->drawSphere(goal_spec.goal_position,
+                                                         problem.goal_region_radius,
+                                                         Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f),
+                                                         0.01f));
+        viewer->getWorldViewer()->setColor(goal_spec.object_name, 0.0f, 1.0f, 0.0);
+    }
 }
 
 float PushPlannerWidget::readValue(QLineEdit* text_field, float default_value) {
@@ -452,12 +451,11 @@ void PushPlannerWidget::startPlanner() {
         sim_env::Box2DObjectPtr target = world->getBox2DObject(_target_selector->currentText().toStdString());
         // set robot controller
         setupRobotController(robot);
-        // create goal
-        Eigen::Vector3f goal_position(1.2, 1.2, 0.0);
+        // create dummy goal
+        mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(target->getName(), Eigen::Vector3f(), Eigen::Quaternionf());
         // create planning problem
         mps::planner::pushing::PlanningProblem planning_problem(world, robot,
-                                                                _robot_controller, target,
-                                                                goal_position);
+                                                                _robot_controller, goal_spec);
         configurePlanningProblem(planning_problem);
         _planner_thread.planner.setup(planning_problem);
         _planner_thread.planner.setSliceDrawer(_slice_drawer);
