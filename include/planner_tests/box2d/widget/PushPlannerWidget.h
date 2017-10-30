@@ -13,6 +13,7 @@
 #include <QtGui/QLineEdit>
 #include <QtGui/QCheckBox>
 #include <QtGui/QPushButton>
+#include <QtGui/QTableWidget>
 
 #include <sim_env/Box2DWorld.h>
 #include <sim_env/Box2DWorldViewer.h>
@@ -32,6 +33,7 @@ namespace planner_tests {
                 void setPlanningProblem(mps::planner::util::yaml::OraclePlanningProblemDesc& desc);
             public slots:
                 void button_clicked(bool enabled);
+                void goal_edit_button_clicked();
             private:
                 struct PlannerThread {
                     mps::planner::pushing::OraclePushPlanner planner;
@@ -55,7 +57,7 @@ namespace planner_tests {
                 // input widgets
                 // first column group (0, 1)
                 QComboBox* _robot_selector;
-                QComboBox* _target_selector;
+                // QComboBox* _target_selector;
                 QLineEdit* _time_out_edit;
                 QCheckBox* _semi_dynamic_check_box;
                 QCheckBox* _debug_check_box;
@@ -72,8 +74,8 @@ namespace planner_tests {
                 QLineEdit* _max_action_duration;
                 QComboBox* _oracle_selector;
                 QComboBox* _algorithm_selector;
-                QLineEdit* _goal_x;
-                QLineEdit* _goal_y;
+                // QLineEdit* _goal_x;
+                // QLineEdit* _goal_y;
                 QLineEdit* _goal_radius;
                 QLineEdit* _goal_bias;
                 // third column group (5, 6)
@@ -81,6 +83,9 @@ namespace planner_tests {
                 QLineEdit* _target_bias;
                 QCheckBox* _static_col_allowed;
                 QLineEdit* _static_col_blacklist;
+                QTableWidget* _goals_table;
+                QPushButton* _add_goal_button;
+                QPushButton* _remove_goal_button;
                 // all columns
                 QPushButton* _start_button;
                 QPushButton* _play_back_button;
@@ -92,12 +97,15 @@ namespace planner_tests {
                 sim_env::Box2DWorldPtr lockWorld();
                 void visualizePlanningProblem(const mps::planner::pushing::PlanningProblem& problem);
                 float readValue(QLineEdit* text_field, float default_value);
+                float readValue(const QString& text, float default_value);
                 void setValue(QLineEdit* text_field, float value);
                 int readIntValue(QLineEdit* text_field, int default_value);
                 void startPlanner();
                 void startPlayback();
                 void stopPlannerThread();
                 void setupRobotController(sim_env::Box2DRobotPtr robot);
+                void addNewGoal();
+                void removeGoal();
             };
         }
     }
