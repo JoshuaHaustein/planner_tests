@@ -16,10 +16,10 @@ find_package(catkin REQUIRED
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED) # TODO: I do not understand why we need this. Shoudn't this be 'inherited' from box2d_sim_env????
 include(${QT_USE_FILE}) # TODO: maybe because of this?
 find_package(Boost REQUIRED COMPONENTS program_options)
-#find_package(Eigen REQUIRED)
-#find_package(OMPL REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Protobuf REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML REQUIRED yaml-cpp)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -40,7 +40,7 @@ catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES planner_tests
   CATKIN_DEPENDS sim_env box2d_sim_env manipulation_planning_suite
-  DEPENDS Threads Boost Qt4 yaml-cpp
+  DEPENDS Boost YAML
 )
 
 ###########
