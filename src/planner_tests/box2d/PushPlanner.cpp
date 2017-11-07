@@ -15,6 +15,9 @@ namespace po = boost::program_options;
 void saveStats(const std::vector<mps::planner::pushing::algorithm::PlanningStatistics>& stats,
                const std::string& file_name) {
     std::ofstream of(file_name.c_str(),  std::ios_base::app);
+    if (not stats.empty()) {
+        stats.at(0).printCVSHeader(of);
+    }
     for (auto& stat : stats) {
         stat.printCVS(of);
     }
@@ -54,6 +57,7 @@ std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim
     world->getLogger()->logInfo(boost::format("Planning problem setup. Running %i iterations") % num_iter,
             "[PushPlanner::runPlanner]");
     for (unsigned int i = 0; i < num_iter; ++i) {
+        world->getLogger()->logInfo(boost::format("Running test %i/%i") % (i + 1) % num_iter, "[PushPlanner::runPlanner]");
         mps::planner::pushing::PlanningSolution sol;
         planner.setup(problem);
         planner.solve(sol);
