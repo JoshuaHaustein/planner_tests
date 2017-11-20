@@ -1,6 +1,5 @@
 world_file: ../worlds/free_world_1m_2s.yaml
 robot_name: robot
-target_name: box
 x_limits: [-0.6, 1.7]
 y_limits: [-0.3, 0.8]
 z_limits: [0.0, 0.0]
@@ -15,9 +14,11 @@ collision_policy:
   static_collisions_allowed: false
   static_collisions_blacklist: []
   collisions_blacklist: []
+goals:
+  - object_name: box
+    radius: 0.1
+    position: [1.4, 0.0, 0.0]
 t_max: 8.0
-goal_position: [1.4, 0.0, 0.0]
-goal_region_radius: 0.1
 oracle_type: Human
 algorithm_type: SliceOracleRRT
 num_control_samples: 2

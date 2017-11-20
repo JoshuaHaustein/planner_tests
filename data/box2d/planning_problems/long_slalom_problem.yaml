@@ -15,9 +15,11 @@ collision_policy:
   static_collisions_allowed: false
   static_collisions_blacklist: [robot]
   collisions_blacklist: []
+goals:
+  - object_name: box
+    radius: 0.1
+    position: [1.9, 0.0, 0.0]
 t_max: 8.0
-goal_position: [1.9, 0.0, 0.0]
-goal_region_radius: 0.1
 oracle_type: Human
 algorithm_type: SliceOracleRRT
 num_control_samples: 2

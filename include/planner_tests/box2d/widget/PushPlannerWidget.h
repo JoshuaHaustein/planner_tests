@@ -74,9 +74,6 @@ namespace planner_tests {
                 QLineEdit* _max_action_duration;
                 QComboBox* _oracle_selector;
                 QComboBox* _algorithm_selector;
-                // QLineEdit* _goal_x;
-                // QLineEdit* _goal_y;
-                QLineEdit* _goal_radius;
                 QLineEdit* _goal_bias;
                 // third column group (5, 6)
                 QLineEdit* _robot_bias;
@@ -104,6 +101,8 @@ namespace planner_tests {
                 void startPlayback();
                 void stopPlannerThread();
                 void setupRobotController(sim_env::Box2DRobotPtr robot);
+                void setGoal(const mps::planner::util::yaml::GoalDesc& goal_desc,
+                             unsigned int idx);
                 void addNewGoal();
                 void removeGoal();
             };

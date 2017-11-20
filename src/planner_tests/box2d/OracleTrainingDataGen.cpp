@@ -34,7 +34,11 @@ struct DataGenerator {
         auto controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
         using namespace std::placeholders;
         robot->setController(std::bind(&sim_env::Box2DRobotVelocityController::control, controller, _1, _2, _3, _4, _5));
-        mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(problem_desc.target_name, problem_desc.goal_position, Eigen::Quaternionf());
+        mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(problem_desc.goals.at(0).obj_name,
+                                                                               problem_desc.goals.at(0).goal_position,
+                                                                               Eigen::Quaternionf(),
+                                                                               problem_desc.goals.at(0).goal_region_radius,
+                                                                               0.0f);
         mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_spec);
         mps::planner::util::yaml::configurePlanningProblem(problem, problem_desc);
         planner.setup(problem);

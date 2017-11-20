@@ -11,9 +11,11 @@ control_limits:
   velocity_limits: [0.6, 0.6, 1.4]
   acceleration_limits: [2, 4, 1.4]
   duration_limits: [0.05, 0.6]
+goals:
+  - object_name: ball
+    position: [0.0, 0.60, 0.0]
+    radius: 0.05
 t_max: 12.0
-goal_position: [0.0, 0.60, 0.0]
-goal_region_radius: 0.05
 oracle_type: Human
 algorithm_type: SliceOracleRRT
 goal_bias: 0.1

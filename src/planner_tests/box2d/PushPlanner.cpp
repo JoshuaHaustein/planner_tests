@@ -36,15 +36,18 @@ std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim
         using namespace std::placeholders;
         robot->setController(std::bind(&sim_env::Box2DRobotVelocityController::control, controller, _1, _2, _3, _4, _5));
     }
-    auto target = world->getObject(problem_desc.target_name, true);
-    if (!target) {
-        throw std::runtime_error("Could not find robot " + problem_desc.target_name);
+    std::vector<mps::planner::ompl::state::goal::RelocationGoalSpecification> goal_specs;
+    for (auto& goal_desc : problem_desc.goals) {
+        mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(goal_desc.obj_name,
+                                                                               goal_desc.goal_position,
+                                                                               Eigen::Quaternionf(),
+                                                                               goal_desc.goal_region_radius,
+                                                                               0.0f);
+        goal_specs.push_back(goal_spec);
     }
-    mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(target->getName(), problem_desc.goal_position, Eigen::Quaternionf());
-    mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_spec);
+    mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_specs);
     problem.oracle_type = problem_desc.oracle_type;
     problem.algorithm_type = problem_desc.algorithm_type;
-    problem.goal_region_radius = problem_desc.goal_region_radius;
     problem.workspace_bounds.x_limits = problem_desc.x_limits;
     problem.workspace_bounds.y_limits = problem_desc.y_limits;
     problem.workspace_bounds.z_limits = problem_desc.z_limits;
