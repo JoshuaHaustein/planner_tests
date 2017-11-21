@@ -11,42 +11,117 @@
 
 using namespace planner_tests::box2d::widget;
 
-void PushPlannerWidget::PlannerThread::plan() {
-    planner.solve(solution);
-}
-
-void PushPlannerWidget::PlannerThread::playback() {
-    if (solution.solved) {
-        planner.playback(solution, std::bind(&PushPlannerWidget::PlannerThread::isInterrupted, this));
-    }
-}
-
-bool PushPlannerWidget::PlannerThread::isInterrupted() {
-    return interrrupt;
-}
-
-PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
-                                     sim_env::Box2DWorldViewerPtr viewer,
-                                     QWidget* parent):
-        QGroupBox("PushPlannerWidget", parent)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// OracleTestWidget ///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OracleTestWidget::OracleTestWidget(PushPlannerWidget* parent) :
+    QGroupBox("OracleTestWidget", parent)
 {
-    _weak_world = world;
-    _weak_viewer = viewer;
-    buildUI();
-    synchUI();
-    auto slice_widget = new widget::SliceWidget(world);
-    viewer->addCustomWidget(slice_widget, "Slice Debug Widget");
-    _slice_drawer = slice_widget->getSliceDrawer();
+    _parent_widget = parent;
 }
 
-PushPlannerWidget::~PushPlannerWidget() = default;
+OracleTestWidget::~OracleTestWidget() = default;
 
-void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlanningProblemDesc &desc) {
-    static const std::string log_prefix("[planner_tests""box2d""widget::PushPlannerWidget::setPlanningProblem]");
-    auto world = _weak_world.lock();
-    if (!world) {
-        throw std::logic_error("Could not access underlying world!");
+void OracleTestWidget::button_clicked() {
+    static std::string log_prefix("[planner_tests::box2d::widget::OracleTestWidget::button_clicked]");
+    auto world = _parent_widget->lockWorld();
+    auto* button_sender = dynamic_cast<QPushButton*>(QObject::sender());
+    if (!button_sender) {
+        world->getLogger()->logErr("Could not identify source of button_clicked signal.", log_prefix);
+        return;
     }
+   if (button_sender == _start_button) {
+        _last_world_state = world->getWorldState();
+        _parent_widget->startOracle(_target_selector->currentText().toStdString(),
+                                    readValue(_x_target, 0.0f),
+                                    readValue(_y_target, 0.0f),
+                                    readValue(_theta_target, 0.0f));
+    } else if (button_sender == _reset_button) {
+        _parent_widget->resetOracle(_last_world_state);
+    } else {
+        world->getLogger()->logErr("Click event received from an unknown button", log_prefix);
+    }
+}
+
+void OracleTestWidget::buildUI() {
+    auto *layout = new QGridLayout();
+    // create target selector
+    unsigned int row = 0;
+    unsigned int col = 0;
+    QLabel* label = new QLabel("Target");
+    _target_selector = new QComboBox();
+    layout->addWidget(label, row, col);
+    layout->addWidget(_target_selector, row, col + 1);
+    col += 2;
+    // x line edit
+    label = new QLabel("x");
+    _x_target = new QLineEdit();
+    _x_target->setText("0.0");
+    layout->addWidget(label, row, col);
+    layout->addWidget(_x_target, row, col + 1);
+    label = new QLabel("x");
+    col += 2;
+    // y line edit
+    label = new QLabel("y");
+    _y_target = new QLineEdit();
+    _y_target->setText("0.0");
+    layout->addWidget(label, row, col);
+    layout->addWidget(_y_target, row, col + 1);
+    col += 2;
+    // theta line edit
+    label = new QLabel("theta");
+    _theta_target = new QLineEdit();
+    _theta_target->setText("0.0");
+    layout->addWidget(label, row, col);
+    layout->addWidget(_theta_target, row, col + 1);
+    ++row;
+    col = 0;
+    ////////////////////////////////////////////////////////////
+    ////////////////////// Bottom button ///////////////////////
+    // start button
+    _start_button = new QPushButton();
+    _start_button->setText("Start oracle");
+    layout->addWidget(_start_button, row, col);
+    QObject::connect(_start_button, SIGNAL(clicked()),
+                     this, SLOT(button_clicked()));
+    col += 1;
+    // reset button
+    _reset_button = new QPushButton();
+    _reset_button->setText("Stop and reset");
+    layout->addWidget(_reset_button, row, col);
+    QObject::connect(_reset_button, SIGNAL(clicked()),
+                     this, SLOT(button_clicked()));
+
+    // finally set the layout
+    setLayout(layout);
+}
+
+void OracleTestWidget::synchUI() {
+    sim_env::Box2DWorldPtr world = _parent_widget->lockWorld();
+    // set selectable robots
+    std::vector<sim_env::ObjectPtr> objects;
+    world->getObjects(objects, false);
+    _target_selector->clear();
+    for (auto obj : objects) {
+        _target_selector->addItem(obj->getName().c_str());
+    }
+    _last_world_state = world->getWorldState();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// PlannerSetupWidget /////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PlannerSetupWidget::PlannerSetupWidget(PushPlannerWidget* parent) :
+    QGroupBox("PlannerSetupWidget", parent)
+{
+    _parent_widget = parent;
+}
+
+PlannerSetupWidget::~PlannerSetupWidget() = default;
+
+void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlanningProblemDesc &desc) {
+    static const std::string log_prefix("[planner_tests::box2d::widget::PlannerSetupWidget::setPlanningProblem]");
+    auto world = _parent_widget->lockWorld();
     auto logger = world->getLogger();
     // set robot
     int combo_idx = _robot_selector->findText(QString(desc.robot_name.c_str()));
@@ -55,14 +130,6 @@ void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlann
     } else {
         _robot_selector->setCurrentIndex(combo_idx);
     }
-    // set target
-    // TODO set target
-    // combo_idx = _target_selector->findText(QString(desc.target_name.c_str()));
-    // if (combo_idx == -1) {
-    //     logger->logErr("Could not find target from problem description", log_prefix);
-    // } else {
-    //     _target_selector->setCurrentIndex(combo_idx);
-    // }
     // set oracle
     std::string oracle_name = mps::planner::util::yaml::oracleTypeToString(desc.oracle_type);
     combo_idx = _oracle_selector->findText(QString(oracle_name.c_str()));
@@ -120,9 +187,9 @@ void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlann
 
 }
 
-void PushPlannerWidget::button_clicked(bool enabled) {
-    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::button_clicked]");
-    auto world = lockWorld();
+void PlannerSetupWidget::button_clicked(bool enabled) {
+    static std::string log_prefix("[planner_tests::box2d::widget::PlannerSetupWidget::button_clicked]");
+    auto world = _parent_widget->lockWorld();
     auto* button_sender = dynamic_cast<QPushButton*>(QObject::sender());
     if (!button_sender) {
         world->getLogger()->logErr("Could not identify source of button_clicked signal.", log_prefix);
@@ -130,20 +197,20 @@ void PushPlannerWidget::button_clicked(bool enabled) {
     }
     if (enabled) {
         if (button_sender == _start_button) {
-            startPlanner();
+            _parent_widget->startPlanner();
         } else if (button_sender == _play_back_button) {
-            startPlayback();
+            _parent_widget->startPlayback();
         } else {
             world->getLogger()->logErr("Click event received from an unknown button", log_prefix);
         }
     } else {
-        stopPlannerThread();
+        _parent_widget->stopPlannerThread();
     }
 }
 
-void PushPlannerWidget::goal_edit_button_clicked() {
-    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::goal_edit_button_clicked]");
-    auto world = lockWorld();
+void PlannerSetupWidget::goal_edit_button_clicked() {
+    static std::string log_prefix("[planner_tests::box2d::widget::PLannerSetupWidget::goal_edit_button_clicked]");
+    auto world = _parent_widget->lockWorld();
     auto* button_sender = dynamic_cast<QPushButton*>(QObject::sender());
     if (!button_sender) {
         world->getLogger()->logErr("Could not identify source of button_clicked signal.", log_prefix);
@@ -158,7 +225,7 @@ void PushPlannerWidget::goal_edit_button_clicked() {
     }
 }
 
-void PushPlannerWidget::buildUI() {
+void PlannerSetupWidget::buildUI() {
     auto *layout = new QGridLayout();
     // create robot selector
     ////////////////////////////////////////////////////////////
@@ -326,8 +393,8 @@ void PushPlannerWidget::buildUI() {
     setLayout(layout);
 }
 
-void PushPlannerWidget::synchUI() {
-    sim_env::Box2DWorldPtr world = lockWorld();
+void PlannerSetupWidget::synchUI() {
+    sim_env::Box2DWorldPtr world = _parent_widget->lockWorld();
     // set selectable robots
     std::vector<sim_env::RobotPtr> robots;
     world->getRobots(robots);
@@ -339,7 +406,22 @@ void PushPlannerWidget::synchUI() {
     // TODO update goal list
 }
 
-void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::PlanningProblem& pp) {
+mps::planner::pushing::PlanningProblem PlannerSetupWidget::getPlanningProblem() {
+    auto world = _parent_widget->lockWorld();
+    sim_env::Box2DRobotPtr robot = world->getBox2DRobot(_robot_selector->currentText().toStdString());
+    // set robot controller
+    auto robot_controller = _parent_widget->setupRobotController(robot);
+    // create dummy goal
+    mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec("DUMMY", Eigen::Vector3f(),
+                                                                           Eigen::Quaternionf(), 0.0f, 0.0f);
+    // create planning problem
+    mps::planner::pushing::PlanningProblem planning_problem(world, robot,
+                                                            robot_controller, goal_spec);
+    configurePlanningProblem(planning_problem);
+    return planning_problem;
+}
+
+void PlannerSetupWidget::configurePlanningProblem(mps::planner::pushing::PlanningProblem& pp) {
     // goal
     pp.relocation_goals.clear();
     std::vector<std::string> target_objects;
@@ -347,10 +429,10 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
         auto* cell_widget = _goals_table->cellWidget(row_id, 0);
         auto* combo_widget = dynamic_cast<QComboBox*>(cell_widget);
         if (!combo_widget) {
-            auto world = _weak_world.lock();
+            auto world = _parent_widget->lockWorld();
             if (world) {
                 world->getLogger()->logErr("Could not cast goal table widget to QComboBox",
-                                         "[planner_tests::box2d::widget::PushPlannerWidget::configuraPlanningProblem]");
+                                         "[planner_tests::box2d::widget::PlannerSetupWidget::configurePlanningProblem]");
             }
             continue;
         }
@@ -405,7 +487,7 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
     mps::planner::ompl::control::RampVelocityControlSpace::ControlSubspace base_motion_subspace(translational_dofs, velocity_norm_limits);
     pp.control_subspaces.push_back(base_motion_subspace);
     // stopping condition
-    pp.stopping_condition = std::bind(&PlannerThread::isInterrupted, std::ref(_planner_thread));
+    pp.stopping_condition = std::bind(&PushPlannerWidget::PlannerThread::isInterrupted, std::ref(_parent_widget->_planner_thread));
     // debug
     pp.debug = _debug_check_box->isChecked();
     // settings control samples
@@ -438,12 +520,137 @@ void PushPlannerWidget::configurePlanningProblem(mps::planner::pushing::Planning
     }
 }
 
+void PlannerSetupWidget::setGoal(const mps::planner::util::yaml::GoalDesc& goal_desc, unsigned int idx)
+{
+    const std::string log_prefix("[planner_tests::box2d::widget::PlannerSetupWidget::setGoal]");
+    auto world = _parent_widget->lockWorld();
+    if (!world) {
+        throw std::logic_error(log_prefix + "Can not access Box2d world");
+    }
+    if (_goals_table->rowCount() - 1 < idx) {
+        throw std::logic_error(log_prefix + " Requested to set a goal entry that does not exist.");
+    }
+    auto* cell_widget = _goals_table->cellWidget(idx, 0);
+    auto* combo_widget = dynamic_cast<QComboBox*>(cell_widget);
+    if (!combo_widget) {
+        throw std::logic_error(log_prefix + " Goal table does not contain a valid QComboBox");
+    }
+    int combo_idx = combo_widget->findText(QString(goal_desc.obj_name.c_str()));
+    if (combo_idx == -1) {
+        world->getLogger()->logErr(boost::format("Could not set goal for object %s. Object unknown!") % goal_desc.obj_name, log_prefix);
+        return;
+    }
+    combo_widget->setCurrentIndex(combo_idx);
+    _goals_table->item(idx, 1)->setText(QString("").setNum(goal_desc.goal_position[0]));
+    _goals_table->item(idx, 2)->setText(QString("").setNum(goal_desc.goal_position[1]));
+    _goals_table->item(idx, 3)->setText(QString("").setNum(goal_desc.goal_region_radius));
+}
+
+void PlannerSetupWidget::addNewGoal() {
+    auto world = _parent_widget->lockWorld();
+    if (!world) {
+        auto logger = sim_env::DefaultLogger::getInstance();
+        logger->logErr("Can not access underlying Box2D World", "[planner_tests::box2d::widget::PlannerSetupWidget::addNewGoal]");
+        return;
+    }
+    std::vector<sim_env::ObjectPtr> objects;
+    world->getObjects(objects, true);
+    std::vector<sim_env::ObjectPtr> movable_objects;
+    for (auto& object : objects) {
+        if (not object->isStatic()) {
+            movable_objects.push_back(object);
+        }
+    }
+    auto logger = sim_env::DefaultLogger::getInstance();
+    if (_goals_table->rowCount() == movable_objects.size()) {
+        // no object left to add
+        logger->logDebug("There are as many goals as movable objects. Nothing to add.", "[planner_tests::box2d::widget::PlannerSetupWidget::addNewGoal]");
+        return;
+    }
+    auto new_row_id = _goals_table->rowCount();
+    _goals_table->insertRow(new_row_id);
+    auto target_selector = new QComboBox();
+    for (auto object : movable_objects) {
+        target_selector->addItem(object->getName().c_str());
+    }
+    _goals_table->setSortingEnabled(false);
+    _goals_table->setCellWidget(new_row_id, 0, target_selector);
+    _goals_table->setItem(new_row_id, 1, new QTableWidgetItem("0.0"));
+    _goals_table->setItem(new_row_id, 2, new QTableWidgetItem("0.0"));
+    _goals_table->setItem(new_row_id, 3, new QTableWidgetItem("0.0"));
+    logger->logDebug(boost::format("Added a new goal in row %i") % new_row_id, "[planner_tests::box2d::widget::PlannerSetupWidget::addNewGoal]");
+}
+
+void PlannerSetupWidget::removeGoal() {
+    auto selected_ranges = _goals_table->selectedRanges();
+    if (selected_ranges.size() == 0 or _goals_table->rowCount() == 1) {
+        auto logger = sim_env::DefaultLogger::getInstance();
+        logger->logDebug("Either nothing selected, or minimal number of goals.",
+                         "[planner_tests::box2d::widget::PlannerSetupWidget::removeGoal]");
+        return;
+    }
+    auto first_range = selected_ranges.at(0);
+    auto row_to_remove = first_range.topRow();
+    _goals_table->removeRow(row_to_remove);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// PushPlannerWidget //////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void PushPlannerWidget::PlannerThread::plan() {
+    planner.solve(solution);
+}
+
+void PushPlannerWidget::PlannerThread::playback() {
+    if (solution.solved) {
+        planner.playback(solution, std::bind(&PushPlannerWidget::PlannerThread::isInterrupted, this));
+    }
+}
+
+bool PushPlannerWidget::PlannerThread::isInterrupted() {
+    return interrrupt;
+}
+
+void PushPlannerWidget::PlannerThread::testOracle() {
+    solution.path = planner.testOracle(oracle_goal);
+    solution.solved = true;
+}
+
+PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
+                                     sim_env::Box2DWorldViewerPtr viewer,
+                                     QWidget* parent):
+        QTabWidget(parent)
+{
+    _weak_world = world;
+    _weak_viewer = viewer;
+    // set up planner setup widget
+    _planner_tab = new widget::PlannerSetupWidget(this);
+    addTab(_planner_tab, "Planner setup");
+    _planner_tab->buildUI();
+    _planner_tab->synchUI();
+    // set up oracle setup widget
+    _oracle_tab = new widget::OracleTestWidget(this);
+    _oracle_tab->buildUI();
+    _oracle_tab->synchUI();
+    addTab(_oracle_tab, "Oracle test");
+    // set up slice widget
+    auto slice_widget = new widget::SliceWidget(world);
+    addTab(slice_widget, "Slice widget");
+    _slice_drawer = slice_widget->getSliceDrawer();
+}
+
+PushPlannerWidget::~PushPlannerWidget() = default;
+
 sim_env::Box2DWorldPtr PushPlannerWidget::lockWorld() {
     sim_env::Box2DWorldPtr world = _weak_world.lock();
     if (!world) {
         throw std::logic_error("[planner_tests::box2d::widget::lockWorld] Could not access Box2dWorld.");
     }
     return world;
+}
+
+void PushPlannerWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlanningProblemDesc &desc) {
+    _planner_tab->setPlanningProblem(desc);
 }
 
 void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::PlanningProblem& problem)
@@ -482,33 +689,6 @@ void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::Pl
     }
 }
 
-float PushPlannerWidget::readValue(QLineEdit* text_field, float default_value) {
-    return readValue(text_field->text(), default_value);
-}
-
-float PushPlannerWidget::readValue(const QString& text, float default_value) {
-    bool ok = false;
-    float value = text.toFloat(&ok);
-    if (ok) {
-        return value;
-    }
-    return default_value;
-}
-
-void PushPlannerWidget::setValue(QLineEdit* text_field, float value) {
-    QString q_string;
-    q_string.setNum(value);
-    text_field->setText(q_string);
-}
-
-int PushPlannerWidget::readIntValue(QLineEdit* text_field, int default_value) {
-    bool ok = false;
-    int value = text_field->text().toInt(&ok);
-    if (ok) {
-        return value;
-    }
-    return default_value;
-}
 
 void PushPlannerWidget::startPlanner() {
     static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::startPlanner]");
@@ -516,15 +696,7 @@ void PushPlannerWidget::startPlanner() {
     if (not _planner_thread.thread.joinable()) {
         world->getLogger()->logInfo("Starting planner", log_prefix);
         mps::planner::util::logging::setLogger(world->getLogger());
-        sim_env::Box2DRobotPtr robot = world->getBox2DRobot(_robot_selector->currentText().toStdString());
-        // set robot controller
-        setupRobotController(robot);
-        // create dummy goal
-        mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec("DUMMY", Eigen::Vector3f(), Eigen::Quaternionf(), 0.0f, 0.0f);
-        // create planning problem
-        mps::planner::pushing::PlanningProblem planning_problem(world, robot,
-                                                                _robot_controller, goal_spec);
-        configurePlanningProblem(planning_problem);
+        auto planning_problem = _planner_tab->getPlanningProblem();
         _planner_thread.planner.setup(planning_problem);
         _planner_thread.planner.setSliceDrawer(_slice_drawer);
         visualizePlanningProblem(planning_problem);
@@ -554,89 +726,47 @@ void PushPlannerWidget::startPlayback() {
     }
 }
 
-void PushPlannerWidget::setupRobotController(sim_env::Box2DRobotPtr robot) {
+void PushPlannerWidget::startOracle(const std::string& target, float x, float y, float theta) {
+    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::startOracle]");
+    auto world = lockWorld();
+    auto state = world->getWorldState();
+    resetOracle(state);
+    if (not _planner_thread.thread.joinable()) {
+        world->getLogger()->logInfo("Starting oracle", log_prefix);
+        mps::planner::util::logging::setLogger(world->getLogger());
+        auto planning_problem = _planner_tab->getPlanningProblem();
+        _planner_thread.planner.setup(planning_problem);
+        // _planner_thread.planner.setSliceDrawer(_slice_drawer);
+        _planner_thread.oracle_goal.goal_position[0] = x;
+        _planner_thread.oracle_goal.goal_position[1] = y;
+        _planner_thread.oracle_goal.goal_position[2] = theta;
+        _planner_thread.oracle_goal.object_name = target;
+        _planner_thread.interrrupt = false;
+        // it doesn't make sense to run this in another thread, we want it to be blocking
+        _planner_thread.testOracle();
+    }
+    startPlayback();
+}
+
+void PushPlannerWidget::resetOracle(sim_env::WorldState& previous_state) {
+    stopPlannerThread();
+    auto world = lockWorld();
+    world->setWorldState(previous_state);
+}
+
+sim_env::Box2DRobotVelocityControllerPtr PushPlannerWidget::setupRobotController(sim_env::Box2DRobotPtr robot) {
     auto iter = _velocity_controllers.find(robot->getName());
+    sim_env::Box2DRobotVelocityControllerPtr robot_controller;
     if (iter != _velocity_controllers.end()) {
-        _robot_controller = iter->second;
+        robot_controller = iter->second;
     } else {
-        _robot_controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
+        robot_controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
+        _velocity_controllers[robot->getName()] = robot_controller;
     }
     using namespace std::placeholders;
     sim_env::Robot::ControlCallback callback = std::bind(&sim_env::Box2DRobotVelocityController::control,
-                                                         _robot_controller,
+                                                         robot_controller,
                                                          _1, _2, _3, _4, _5);
     robot->setController(callback);
-}
-
-void PushPlannerWidget::setGoal(const mps::planner::util::yaml::GoalDesc& goal_desc, unsigned int idx)
-{
-    const std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::setGoal]");
-    auto world = _weak_world.lock();
-    if (!world) {
-        throw std::logic_error(log_prefix + "Can not access Box2d world");
-    }
-    if (_goals_table->rowCount() - 1 < idx) {
-        throw std::logic_error(log_prefix + " Requested to set a goal entry that does not exist.");
-    }
-    auto* cell_widget = _goals_table->cellWidget(idx, 0);
-    auto* combo_widget = dynamic_cast<QComboBox*>(cell_widget);
-    if (!combo_widget) {
-        throw std::logic_error(log_prefix + " Goal table does not contain a valid QComboBox");
-    }
-    int combo_idx = combo_widget->findText(QString(goal_desc.obj_name.c_str()));
-    if (combo_idx == -1) {
-        world->getLogger()->logErr(boost::format("Could not set goal for object %s. Object unknown!") % goal_desc.obj_name, log_prefix);
-        return;
-    }
-    combo_widget->setCurrentIndex(combo_idx);
-    _goals_table->item(idx, 1)->setText(QString("").setNum(goal_desc.goal_position[0]));
-    _goals_table->item(idx, 2)->setText(QString("").setNum(goal_desc.goal_position[1]));
-    _goals_table->item(idx, 3)->setText(QString("").setNum(goal_desc.goal_region_radius));
-}
-
-void PushPlannerWidget::addNewGoal() {
-    auto world = _weak_world.lock();
-    if (!world) {
-        auto logger = sim_env::DefaultLogger::getInstance();
-        logger->logErr("Can not access underlying Box2D World", "[planner_tests::box2d::widget::PushPlannerWidget::addNewGoal]");
-        return;
-    }
-    std::vector<sim_env::ObjectPtr> objects;
-    world->getObjects(objects, true);
-    std::vector<sim_env::ObjectPtr> movable_objects;
-    for (auto& object : objects) {
-        if (not object->isStatic()) {
-            movable_objects.push_back(object);
-        }
-    }
-    auto logger = sim_env::DefaultLogger::getInstance();
-    if (_goals_table->rowCount() == movable_objects.size()) {
-        // no object left to add
-        logger->logDebug("There are as many goals as movable objects. Nothing to add.", "[planner_tests::box2d::widget::PushPlannerWidget::addNewGoal]");
-        return;
-    }
-    auto new_row_id = _goals_table->rowCount();
-    _goals_table->insertRow(new_row_id);
-    auto target_selector = new QComboBox();
-    for (auto object : movable_objects) {
-        target_selector->addItem(object->getName().c_str());
-    }
-    _goals_table->setSortingEnabled(false);
-    _goals_table->setCellWidget(new_row_id, 0, target_selector);
-    _goals_table->setItem(new_row_id, 1, new QTableWidgetItem("0.0"));
-    _goals_table->setItem(new_row_id, 2, new QTableWidgetItem("0.0"));
-    _goals_table->setItem(new_row_id, 3, new QTableWidgetItem("0.0"));
-    logger->logDebug(boost::format("Added a new goal in row %i") % new_row_id, "[planner_tests::box2d::widget::PushPlannerWidget::addNewGoal]");
-}
-
-void PushPlannerWidget::removeGoal() {
-    auto selected_ranges = _goals_table->selectedRanges();
-    if (selected_ranges.size() == 0 or _goals_table->rowCount() == 1) {
-        auto logger = sim_env::DefaultLogger::getInstance();
-        logger->logDebug("Either nothing selected, or minimal number of goals.", "[planner_tests::box2d::widget::PushPlannerWidget::removeGoal]");
-        return;
-    }
-    auto first_range = selected_ranges.at(0);
-    auto row_to_remove = first_range.topRow();
-    _goals_table->removeRow(row_to_remove);
+    return robot_controller;
 }
