@@ -21,6 +21,7 @@ goals:
 t_max: 8.0
 oracle_type: Human
 algorithm_type: SliceOracleRRT
+local_planner_type: Line
 num_control_samples: 2
 goal_bias: 0.1
 target_bias: 0.1

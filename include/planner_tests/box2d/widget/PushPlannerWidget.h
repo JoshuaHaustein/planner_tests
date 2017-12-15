@@ -77,6 +77,7 @@ namespace planner_tests {
                 QCheckBox* _debug_check_box;
                 QLineEdit* _t_max_edit;
                 QLineEdit* _num_control_samples;
+                QComboBox* _local_planner_selector;
                 // second column group (2, 3, 4)
                 QLineEdit* _min_x_workbounds;
                 QLineEdit* _max_x_workbounds;
@@ -100,6 +101,7 @@ namespace planner_tests {
                 // all columns
                 QPushButton* _start_button;
                 QPushButton* _play_back_button;
+                QPushButton* _show_sdf_button;
 
                 PushPlannerWidget* _parent_widget;
 
@@ -122,6 +124,7 @@ namespace planner_tests {
 
             protected:
                 void visualizePlanningProblem(const mps::planner::pushing::PlanningProblem& problem);
+                void showSDF();
                 void startPlanner();
                 void startPlayback();
                 void startOracle(const std::string& target, float x, float y, float theta);

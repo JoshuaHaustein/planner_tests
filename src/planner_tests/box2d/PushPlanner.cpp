@@ -46,15 +46,7 @@ std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim
         goal_specs.push_back(goal_spec);
     }
     mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_specs);
-    problem.oracle_type = problem_desc.oracle_type;
-    problem.algorithm_type = problem_desc.algorithm_type;
-    problem.workspace_bounds.x_limits = problem_desc.x_limits;
-    problem.workspace_bounds.y_limits = problem_desc.y_limits;
-    problem.workspace_bounds.z_limits = problem_desc.z_limits;
-    problem.workspace_bounds.max_rotation_vel = problem_desc.max_rotation_vel;
-    problem.workspace_bounds.max_velocity = problem_desc.max_velocity;
-    problem.t_max = problem_desc.t_max;
-    problem.num_control_samples = problem_desc.num_control_samples;
+    mps::planner::util::yaml::configurePlanningProblem(problem, problem_desc);
     mps::planner::pushing::OraclePushPlanner planner;
     std::vector<mps::planner::pushing::algorithm::PlanningStatistics> stats_vector;
     world->getLogger()->logInfo(boost::format("Planning problem setup. Running %i iterations") % num_iter,
