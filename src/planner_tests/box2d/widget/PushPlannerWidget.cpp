@@ -648,6 +648,7 @@ bool PushPlannerWidget::PlannerThread::isInterrupted() {
 void PushPlannerWidget::PlannerThread::testOracle() {
     solution.path = planner.testOracle(oracle_goal);
     solution.solved = true;
+    playback();
 }
 
 PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
@@ -731,7 +732,7 @@ void PushPlannerWidget::showSDF() {
         mps::planner::util::logging::setLogger(world->getLogger());
         auto planning_problem = _planner_tab->getPlanningProblem();
         _planner_thread.planner.setup(planning_problem);
-        _planner_thread.planner.renderSDF(0.02f);
+        _planner_thread.planner.renderSDF(0.01f);
     }
 }
 
@@ -748,6 +749,9 @@ void PushPlannerWidget::startPlanner() {
         visualizePlanningProblem(planning_problem);
         _planner_thread.interrrupt = false;
         _planner_thread.thread = std::thread(&PlannerThread::plan, std::ref(_planner_thread));
+    } else {
+        world->getLogger()->logWarn("Could not start planner because the planner thread is still running.", log_prefix);
+        world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
 }
 
@@ -769,6 +773,9 @@ void PushPlannerWidget::startPlayback() {
         world->getLogger()->logInfo("Starting playback", log_prefix);
         _planner_thread.interrrupt = false;
         _planner_thread.thread = std::thread(&PlannerThread::playback, std::ref(_planner_thread));
+    } else {
+        world->getLogger()->logWarn("Could not start playback because the planner thread is still running.", log_prefix);
+        world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
 }
 
@@ -788,10 +795,11 @@ void PushPlannerWidget::startOracle(const std::string& target, float x, float y,
         _planner_thread.oracle_goal.goal_position[2] = theta;
         _planner_thread.oracle_goal.object_name = target;
         _planner_thread.interrrupt = false;
-        // it doesn't make sense to run this in another thread, we want it to be blocking
-        _planner_thread.testOracle();
+        _planner_thread.thread = std::thread(&PlannerThread::testOracle, std::ref(_planner_thread));
+    } else {
+        world->getLogger()->logWarn("Could not start oracle because the planner thread is still running.", log_prefix);
+        world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
-    startPlayback();
 }
 
 void PushPlannerWidget::resetOracle(sim_env::WorldState& previous_state) {

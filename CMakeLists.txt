@@ -67,6 +67,9 @@ set(PUSH_PLANNER_SRC
 set(ORACLE_TRAINING_DATA_SRC
         src/planner_tests/box2d/OracleTrainingDataGen.cpp)
 
+set(SDF_TEST_SRC
+        src/planner_tests/box2d/testSDF.cpp)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include
@@ -88,6 +91,10 @@ include_directories(include
  add_executable(box2d_push_planner
          ${PUSH_PLANNER_SRC}
          ${MOC_SRCS}
+         )
+
+ add_executable(box2d_sdf_test
+         ${SDF_TEST_SRC}
          )
 
 add_executable(box2d_oracle_generation
@@ -118,6 +125,13 @@ target_link_libraries(box2d_oracle_generation
      yaml-cpp
 )
 
+target_link_libraries(box2d_sdf_test
+     ${catkin_LIBRARIES}
+     ${Boost_LIBRARIES}
+     ${CMAKE_THREAD_LIBS_INIT}
+     ${PROTOBUF_LIBRARY}
+     yaml-cpp
+)
 #############
 ## Install ##
 #############
