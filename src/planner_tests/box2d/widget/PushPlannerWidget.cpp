@@ -292,7 +292,7 @@ void PlannerSetupWidget::buildUI() {
     layout->addWidget(label, row, col);
     _local_planner_selector = new QComboBox();
     _local_planner_selector->addItem("Line", mps::planner::pushing::PlanningProblem::LocalPlanner::Line);
-    _local_planner_selector->addItem("ElasticBand", mps::planner::pushing::PlanningProblem::LocalPlanner::ElasticBand);
+    _local_planner_selector->addItem("PotentialField", mps::planner::pushing::PlanningProblem::LocalPlanner::PotentialField);
     layout->addWidget(_local_planner_selector, row, col + 1);
     ////////////////////////////////////////////////////////////
     ////////////////////// Second column (2 - 4) ///////////////
