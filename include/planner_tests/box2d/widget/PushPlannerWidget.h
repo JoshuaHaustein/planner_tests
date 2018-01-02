@@ -90,6 +90,7 @@ namespace planner_tests {
                 QComboBox* _oracle_selector;
                 QComboBox* _algorithm_selector;
                 QLineEdit* _goal_bias;
+                QLineEdit* _prand;
                 // third column group (5, 6)
                 QLineEdit* _robot_bias;
                 QLineEdit* _target_bias;
