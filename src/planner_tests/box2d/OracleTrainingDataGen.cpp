@@ -23,7 +23,7 @@ struct DataGenerator {
     unsigned int num_samples;
     void run() {
         auto robot = world->getBox2DRobot(problem_desc.robot_name);
-        auto target_object = world->getBox2DObject(problem_desc.target_name);
+        auto target_object = world->getBox2DObject(problem_desc.training_object_name);
         std::stringstream header;
         auto aabb = target_object->getLocalAABB();
         header << aabb.getWidth() << ", " << aabb.getHeight()
@@ -107,7 +107,7 @@ int main(int argc, const char* const* argv) {
     assert(env_desc.robots.size() == 1);
     // remove objects
     ObjectFilter obj_filter;
-    obj_filter.name = planning_desc.target_name;
+    obj_filter.name = planning_desc.training_object_name;
     std::remove_if(env_desc.objects.begin(), env_desc.objects.end(),
                    std::bind(&ObjectFilter::filter, &obj_filter, std::placeholders::_1));
     assert(env_desc.objects.size() == 1);

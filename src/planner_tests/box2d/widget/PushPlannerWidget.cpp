@@ -183,6 +183,7 @@ void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlan
     setValue(_goal_bias, desc.goal_bias);
     setValue(_target_bias, desc.target_bias);
     setValue(_robot_bias, desc.robot_bias);
+    setValue(_prand, desc.p_rand);
     // set collision policy
     _static_col_allowed->setChecked(desc.collision_policy.static_collisions_allowed);
     for (auto& obj_name : desc.collision_policy.static_collisions_blacklist) {
@@ -307,8 +308,10 @@ void PlannerSetupWidget::buildUI() {
     // layout->addWidget(_goal_y, row, col + 2);
     // ++row;
     // Goal bias
-    label = new QLabel("Goal bias");
+    label = new QLabel("P_rand and goal bias");
     layout->addWidget(label, row, col);
+    _prand = new QLineEdit(QString("0.5"));
+    layout->addWidget(_prand, row, col + 1);
     _goal_bias = new QLineEdit(QString("0.1"));
     layout->addWidget(_goal_bias, row, col + 2);
     ++row;
@@ -352,7 +355,8 @@ void PlannerSetupWidget::buildUI() {
     _algorithm_selector->addItem("OracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::OracleRRT);
     _algorithm_selector->addItem("SliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::SliceOracleRRT);
     _algorithm_selector->addItem("CompleteSliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::CompleteSliceOracleRRT);
-    _algorithm_selector->addItem("GNATSamplingSliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::GNATSamplingSliceOracleRRT);
+    _algorithm_selector->addItem("HybridActionRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::HybridActionRRT);
+    // _algorithm_selector->addItem("GNATSamplingSliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::GNATSamplingSliceOracleRRT);
     layout->addWidget(_algorithm_selector, row, col + 1);
     _oracle_selector = new QComboBox();
     _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);
@@ -495,6 +499,7 @@ void PlannerSetupWidget::configurePlanningProblem(mps::planner::pushing::Plannin
     pp.robot_bias = readValue(_robot_bias, 0.1f);
     pp.target_bias = readValue(_target_bias, 0.1f);
     pp.goal_bias = readValue(_goal_bias, 0.1f);
+    pp.p_rand = readValue(_prand, 0.5f);
     // control bounds
     auto vel_limits = pp.robot->getDOFVelocityLimits();
     pp.control_limits.velocity_limits.resize(vel_limits.rows());
