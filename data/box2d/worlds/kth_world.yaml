@@ -4,13 +4,13 @@ robots:
     filename: ../robots/rigid_fingers_robot.yaml
 objects:
   - name: box_1
-    filename: ../objects/hletter.yaml
+    filename: ../objects/cletter.yaml
     static: False
   - name: box_2
-    filename: ../objects/kletter.yaml
+    filename: ../objects/aletter.yaml
     static: False
   - name: box_3
-    filename: ../objects/tletter.yaml
+    filename: ../objects/bletter.yaml
     static: False
 world_bounds: [-0.2, -0.2, 2.0, 0.8]
 states:

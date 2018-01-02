@@ -26,7 +26,7 @@ goals:
     radius: 0.15
     position: [1.0, 0.3, 0.0]
 t_max: 8.0
-oracle_type: Human
+oracle_type: {{ oracle_type }}
 algorithm_type: CompleteSliceOracleRRT
 num_control_samples: 2
 goal_bias: 0.1

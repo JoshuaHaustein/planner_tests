@@ -4,7 +4,7 @@ robots:
     filename: ../robots/rigid_fingers_robot.yaml
 objects:
   - name: box
-    filename: ../objects/box.yaml
+    filename: ../objects/box_light_slippery.yaml
     static: False
   - name: wall_1
     filename: ../objects/wall.yaml
@@ -15,9 +15,9 @@ objects:
   - name: wall_3
     filename: ../objects/wall.yaml
     static: True
-  - name: movable_wall
+  - name: wall_4
     filename: ../objects/wall.yaml
-    static: False
+    static: True
 world_bounds: [-1.0, -0.4, 2.2, 0.8]
 states:
   - name: robot
@@ -30,17 +30,18 @@ states:
       velocity: [0.0, 0.0, 0.0]
   - name: wall_1
     state:
-      configuration: [1.37, 0.40, 0]
+      configuration: [0.3, 0.3, 1.57]
       velocity: [0.0, 0.0, 0.0]
   - name: wall_2
     state:
-      configuration: [1.82, 0.03, 1.57]
+      configuration: [0.8, -0.2, 1.57]
       velocity: [0.0, 0.0, 0.0]
   - name: wall_3
     state:
-      configuration: [1.37, 0.04, 0]
+      configuration: [1.2, 0.3, 1.57]
       velocity: [0.0, 0.0, 0.0]
-  - name: movable_wall
+  - name: wall_4
     state:
-      configuration: [1.34, 0.2, 1.57]
+      configuration: [1.7, -0.2, 1.57]
       velocity: [0.0, 0.0, 0.0]
+

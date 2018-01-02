@@ -4,8 +4,8 @@ links:
     geometry:
       - [ 0.    ,  0.075 ,  0.1125,  0.075 ,  0.1125,  0.1125,  0.    , 0.1125]
       - [ 0.0375,  0.    ,  0.075 ,  0.    ,  0.075 ,  0.075 ,  0.0375, 0.075 ]
-    mass: 0.4
-    trans_friction: 0.2
+    mass: 0.3
+    trans_friction: 0.3
     rot_friction: 0.09
     contact_friction: 1.5
     restitution: 1.0

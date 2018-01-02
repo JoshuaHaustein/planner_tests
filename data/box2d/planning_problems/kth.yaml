@@ -1,8 +1,8 @@
-world_file: ../worlds/door_world_2m_3s.yaml
+world_file: ../worlds/kth_world.yaml
 robot_name: robot
-target_name: box
-x_limits: [-1.0, 2.0]
-y_limits: [-0.3, 0.8]
+target_name: box_1
+x_limits: [-0.2, 2.0]
+y_limits: [-0.2, 0.8]
 z_limits: [0.0, 0.0]
 max_velocity: 1.0
 max_rotation_vel: 1.0
@@ -16,12 +16,18 @@ collision_policy:
   static_collisions_blacklist: [robot]
   collisions_blacklist: []
 goals:
-  - object_name: box
-    radius: 0.1
-    position: [1.6, 0.25, 0.0]
+  - object_name: box_1
+    radius: 0.15
+    position: [1.5, 0.3, 0.0]
+  - object_name: box_2
+    radius: 0.15
+    position: [0.5, 0.3, 0.0]
+  - object_name: box_3
+    radius: 0.15
+    position: [1.0, 0.3, 0.0]
 t_max: 8.0
-oracle_type: Human
-algorithm_type: SliceOracleRRT
+oracle_type: Learned
+algorithm_type: CompleteSliceOracleRRT
 num_control_samples: 2
 goal_bias: 0.1
 target_bias: 0.1

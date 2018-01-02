@@ -1,7 +1,7 @@
 scale: 10.0
 robots:
   - name: robot
-    filename: ../robots/holonomic_plower.yaml
+    filename: ../robots/rigid_fingers_robot.yaml
 objects:
   - name: ball
     filename: ../objects/octagon.yaml

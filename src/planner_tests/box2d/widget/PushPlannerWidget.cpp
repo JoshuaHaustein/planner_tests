@@ -138,6 +138,14 @@ void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlan
     } else {
         _oracle_selector->setCurrentIndex(combo_idx);
     }
+    // set robot oracle
+    std::string local_planner_type = mps::planner::util::yaml::localPlannerTypeToString(desc.local_planner_type);
+    combo_idx = _local_planner_selector->findText(QString(local_planner_type.c_str()));
+    if (combo_idx == -1) {
+        logger->logErr("Could not find local planner from problem description", log_prefix);
+    } else {
+        _local_planner_selector->setCurrentIndex(combo_idx);
+    }
     // set algorithm
     std::string algorithm_name = mps::planner::util::yaml::algorithmTypeToString(desc.algorithm_type);
     combo_idx = _algorithm_selector->findText(QString(algorithm_name.c_str()));
@@ -204,7 +212,11 @@ void PlannerSetupWidget::button_clicked(bool enabled) {
             world->getLogger()->logErr("Click event received from an unknown button", log_prefix);
         }
     } else {
-        _parent_widget->stopPlannerThread();
+        if (button_sender == _show_sdf_button) {
+           _parent_widget->showSDF();
+        } else {
+           _parent_widget->stopPlannerThread();
+        }
     }
 }
 
@@ -274,6 +286,14 @@ void PlannerSetupWidget::buildUI() {
     _num_control_samples->setText("10");
     layout->addWidget(label, row, col);
     layout->addWidget(_num_control_samples, row, col + 1);
+    // Local planner selector
+    ++row;
+    label = new QLabel("Local planner type");
+    layout->addWidget(label, row, col);
+    _local_planner_selector = new QComboBox();
+    _local_planner_selector->addItem("Line", mps::planner::pushing::PlanningProblem::LocalPlanner::Line);
+    _local_planner_selector->addItem("PotentialField", mps::planner::pushing::PlanningProblem::LocalPlanner::PotentialField);
+    layout->addWidget(_local_planner_selector, row, col + 1);
     ////////////////////////////////////////////////////////////
     ////////////////////// Second column (2 - 4) ///////////////
     row = 0;
@@ -338,6 +358,7 @@ void PlannerSetupWidget::buildUI() {
     _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);
     _oracle_selector->addItem("Learned", mps::planner::pushing::PlanningProblem::OracleType::Learned);
     layout->addWidget(_oracle_selector, row, col + 2);
+    ++row;
     ///////////////////////////// Columns (5, 6 and 7) //////////////////////
     col = 5;
     row = 0;
@@ -387,6 +408,12 @@ void PlannerSetupWidget::buildUI() {
     _play_back_button->setCheckable(true);
     layout->addWidget(_play_back_button, 6, 1);
     QObject::connect(_play_back_button, SIGNAL(clicked(bool)),
+                     this, SLOT(button_clicked(bool)));
+    // show sdf button
+    _show_sdf_button = new QPushButton();
+    _show_sdf_button->setText("Show/Update SDF");
+    layout->addWidget(_show_sdf_button, 6, 2);
+    QObject::connect(_show_sdf_button, SIGNAL(clicked(bool)),
                      this, SLOT(button_clicked(bool)));
 
     // finally set the layout
@@ -500,11 +527,18 @@ void PlannerSetupWidget::configurePlanningProblem(mps::planner::pushing::Plannin
         enum_value = mps::planner::pushing::PlanningProblem::OracleType::Human;
     }
     pp.oracle_type = mps::planner::pushing::PlanningProblem::OracleType(enum_value);
+    // algorithm type
     enum_value = _algorithm_selector->itemData(_algorithm_selector->currentIndex()).toInt(&ok);
     if (not ok) {
         enum_value = mps::planner::pushing::PlanningProblem::AlgorithmType::Naive;
     }
     pp.algorithm_type = mps::planner::pushing::PlanningProblem::AlgorithmType(enum_value);
+    // local planner type
+    enum_value = _local_planner_selector->itemData(_local_planner_selector->currentIndex()).toInt(&ok);
+    if (not ok) {
+        enum_value = mps::planner::pushing::PlanningProblem::LocalPlanner::Line;
+    }
+    pp.local_planner_type = mps::planner::pushing::PlanningProblem::LocalPlanner(enum_value);
     // collision policy
     pp.collision_policy.setStaticCollisions(_static_col_allowed->isChecked());
     // parse black list
@@ -614,6 +648,7 @@ bool PushPlannerWidget::PlannerThread::isInterrupted() {
 void PushPlannerWidget::PlannerThread::testOracle() {
     solution.path = planner.testOracle(oracle_goal);
     solution.solved = true;
+    playback();
 }
 
 PushPlannerWidget::PushPlannerWidget(sim_env::Box2DWorldPtr world,
@@ -689,6 +724,18 @@ void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::Pl
     }
 }
 
+void PushPlannerWidget::showSDF() {
+    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::showSDF]");
+    auto world = lockWorld();
+    if (not _planner_thread.thread.joinable()) {
+        world->getLogger()->logInfo("Showing SDF", log_prefix);
+        mps::planner::util::logging::setLogger(world->getLogger());
+        auto planning_problem = _planner_tab->getPlanningProblem();
+        _planner_thread.planner.setup(planning_problem);
+        _planner_thread.planner.renderSDF(0.01f);
+    }
+}
+
 
 void PushPlannerWidget::startPlanner() {
     static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::startPlanner]");
@@ -702,6 +749,9 @@ void PushPlannerWidget::startPlanner() {
         visualizePlanningProblem(planning_problem);
         _planner_thread.interrrupt = false;
         _planner_thread.thread = std::thread(&PlannerThread::plan, std::ref(_planner_thread));
+    } else {
+        world->getLogger()->logWarn("Could not start planner because the planner thread is still running.", log_prefix);
+        world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
 }
 
@@ -723,6 +773,9 @@ void PushPlannerWidget::startPlayback() {
         world->getLogger()->logInfo("Starting playback", log_prefix);
         _planner_thread.interrrupt = false;
         _planner_thread.thread = std::thread(&PlannerThread::playback, std::ref(_planner_thread));
+    } else {
+        world->getLogger()->logWarn("Could not start playback because the planner thread is still running.", log_prefix);
+        world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
 }
 
@@ -742,10 +795,11 @@ void PushPlannerWidget::startOracle(const std::string& target, float x, float y,
         _planner_thread.oracle_goal.goal_position[2] = theta;
         _planner_thread.oracle_goal.object_name = target;
         _planner_thread.interrrupt = false;
-        // it doesn't make sense to run this in another thread, we want it to be blocking
-        _planner_thread.testOracle();
+        _planner_thread.thread = std::thread(&PlannerThread::testOracle, std::ref(_planner_thread));
+    } else {
+        world->getLogger()->logWarn("Could not start oracle because the planner thread is still running.", log_prefix);
+        world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
-    startPlayback();
 }
 
 void PushPlannerWidget::resetOracle(sim_env::WorldState& previous_state) {
