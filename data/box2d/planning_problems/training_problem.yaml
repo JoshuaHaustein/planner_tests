@@ -1,6 +1,6 @@
 world_file: ../worlds/free_world_1m_0s.yaml
 robot_name: robot
-target_name: box
+training_object_name: box
 x_limits: [-2.0, 2.0]
 y_limits: [-2.0, 2.0]
 z_limits: [0.0, 0.0]
