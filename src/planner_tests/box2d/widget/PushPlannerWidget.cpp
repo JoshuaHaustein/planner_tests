@@ -185,6 +185,7 @@ void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlan
     setValue(_target_bias, desc.target_bias);
     setValue(_robot_bias, desc.robot_bias);
     setValue(_action_noise, desc.action_noise);
+    setValue(_state_noise, desc.state_noise);
     // set collision policy
     _static_col_allowed->setChecked(desc.collision_policy.static_collisions_allowed);
     for (auto& obj_name : desc.collision_policy.static_collisions_blacklist) {
