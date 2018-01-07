@@ -90,12 +90,14 @@ namespace planner_tests {
                 QComboBox* _oracle_selector;
                 QComboBox* _algorithm_selector;
                 QLineEdit* _goal_bias;
-                QLineEdit* _prand;
+                QLineEdit* _action_noise;
+                QLineEdit* _state_noise;
                 // third column group (5, 6)
                 QLineEdit* _robot_bias;
                 QLineEdit* _target_bias;
                 QCheckBox* _static_col_allowed;
                 QLineEdit* _static_col_blacklist;
+                QCheckBox* _slice_ball_projection;
                 QTableWidget* _goals_table;
                 QPushButton* _add_goal_button;
                 QPushButton* _remove_goal_button;

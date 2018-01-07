@@ -168,6 +168,7 @@ void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlan
     setValue(_time_out_edit, desc.planning_timeout);
     setValue(_num_control_samples, desc.num_control_samples); // only for naive version
     setValue(_t_max_edit, desc.t_max);
+    _slice_ball_projection->setChecked(desc.do_slice_ball_projection);
     // set goal region
     {
         unsigned int idx = 0;
@@ -183,7 +184,7 @@ void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlan
     setValue(_goal_bias, desc.goal_bias);
     setValue(_target_bias, desc.target_bias);
     setValue(_robot_bias, desc.robot_bias);
-    setValue(_prand, desc.p_rand);
+    setValue(_action_noise, desc.action_noise);
     // set collision policy
     _static_col_allowed->setChecked(desc.collision_policy.static_collisions_allowed);
     for (auto& obj_name : desc.collision_policy.static_collisions_blacklist) {
@@ -240,6 +241,7 @@ void PlannerSetupWidget::goal_edit_button_clicked() {
 
 void PlannerSetupWidget::buildUI() {
     auto *layout = new QGridLayout();
+    unsigned int bottom_row = 0;
     // create robot selector
     ////////////////////////////////////////////////////////////
     ////////////////////// First column ////////////////////////
@@ -297,6 +299,7 @@ void PlannerSetupWidget::buildUI() {
     layout->addWidget(_local_planner_selector, row, col + 1);
     ////////////////////////////////////////////////////////////
     ////////////////////// Second column (2 - 4) ///////////////
+    bottom_row = std::max(bottom_row, row);
     row = 0;
     col = 2;
     // goal settings
@@ -308,12 +311,17 @@ void PlannerSetupWidget::buildUI() {
     // layout->addWidget(_goal_y, row, col + 2);
     // ++row;
     // Goal bias
-    label = new QLabel("P_rand and goal bias");
+    label = new QLabel("Action noise and state noise");
     layout->addWidget(label, row, col);
-    _prand = new QLineEdit(QString("0.5"));
-    layout->addWidget(_prand, row, col + 1);
+    _action_noise = new QLineEdit(QString("0.001"));
+    layout->addWidget(_action_noise, row, col + 1);
+    _state_noise = new QLineEdit(QString("0.001"));
+    layout->addWidget(_state_noise, row, col + 2);
+    ++row;
+    label = new QLabel("Goal bias");
+    layout->addWidget(label, row, col);
     _goal_bias = new QLineEdit(QString("0.1"));
-    layout->addWidget(_goal_bias, row, col + 2);
+    layout->addWidget(_goal_bias, row, col + 1);
     ++row;
     // Workspace bounds for x
     label = new QLabel("Workspace bounds x (min, max):");
@@ -354,7 +362,6 @@ void PlannerSetupWidget::buildUI() {
     _algorithm_selector->addItem("Naive", mps::planner::pushing::PlanningProblem::AlgorithmType::Naive);
     _algorithm_selector->addItem("OracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::OracleRRT);
     _algorithm_selector->addItem("SliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::SliceOracleRRT);
-    _algorithm_selector->addItem("CompleteSliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::CompleteSliceOracleRRT);
     _algorithm_selector->addItem("HybridActionRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::HybridActionRRT);
     // _algorithm_selector->addItem("GNATSamplingSliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::GNATSamplingSliceOracleRRT);
     layout->addWidget(_algorithm_selector, row, col + 1);
@@ -364,6 +371,7 @@ void PlannerSetupWidget::buildUI() {
     layout->addWidget(_oracle_selector, row, col + 2);
     ++row;
     ///////////////////////////// Columns (5, 6 and 7) //////////////////////
+    bottom_row = std::max(bottom_row, row);
     col = 5;
     row = 0;
     // Goal and robot bias
@@ -374,12 +382,20 @@ void PlannerSetupWidget::buildUI() {
     _robot_bias = new QLineEdit(QString("0.1"));
     layout->addWidget(_robot_bias, row, col + 2);
     ++row;
+    // Collision list
     label = new QLabel(QString("Static collisions blacklist"));
     layout->addWidget(label, row, col);
     _static_col_allowed = new QCheckBox(QString("Allow static col"));
     layout->addWidget(_static_col_allowed, row, col+1);
     _static_col_blacklist = new QLineEdit("robot");
     layout->addWidget(_static_col_blacklist, row, col + 2);
+    ++row;
+    // slice ball projection
+    _slice_ball_projection = new QCheckBox();
+    _slice_ball_projection->setText("Slice ball projection");
+    _slice_ball_projection->setChecked(true);
+    layout->addWidget(_slice_ball_projection, row, col);
+    ++row;
     // Goal table
     QStringList header_names;
     header_names << QString("Target") << QString("x") << QString("y") << QString("r");
@@ -397,26 +413,28 @@ void PlannerSetupWidget::buildUI() {
     QObject::connect(_remove_goal_button, SIGNAL(clicked()),
                     this, SLOT(goal_edit_button_clicked()));
     addNewGoal();
+    bottom_row = std::max(bottom_row, row);
     ////////////////////////////////////////////////////////////
     ////////////////////// Bottom button ///////////////////////
+    bottom_row += 1;
     // start button
     _start_button = new QPushButton();
     _start_button->setText("Start planner");
     _start_button->setCheckable(true);
-    layout->addWidget(_start_button, 6, 0);
+    layout->addWidget(_start_button, bottom_row, 0);
     QObject::connect(_start_button, SIGNAL(clicked(bool)),
                      this, SLOT(button_clicked(bool)));
     // play back button
     _play_back_button = new QPushButton();
     _play_back_button->setText("Playback last solution");
     _play_back_button->setCheckable(true);
-    layout->addWidget(_play_back_button, 6, 1);
+    layout->addWidget(_play_back_button, bottom_row, 1);
     QObject::connect(_play_back_button, SIGNAL(clicked(bool)),
                      this, SLOT(button_clicked(bool)));
     // show sdf button
     _show_sdf_button = new QPushButton();
     _show_sdf_button->setText("Show/Update SDF");
-    layout->addWidget(_show_sdf_button, 6, 2);
+    layout->addWidget(_show_sdf_button, bottom_row, 2);
     QObject::connect(_show_sdf_button, SIGNAL(clicked(bool)),
                      this, SLOT(button_clicked(bool)));
 
@@ -499,7 +517,9 @@ void PlannerSetupWidget::configurePlanningProblem(mps::planner::pushing::Plannin
     pp.robot_bias = readValue(_robot_bias, 0.1f);
     pp.target_bias = readValue(_target_bias, 0.1f);
     pp.goal_bias = readValue(_goal_bias, 0.1f);
-    pp.p_rand = readValue(_prand, 0.5f);
+    pp.action_noise = readValue(_action_noise, 0.001f);
+    pp.state_noise = readValue(_state_noise, 0.001f);
+    pp.do_slice_ball_projection  = _slice_ball_projection->isChecked();
     // control bounds
     auto vel_limits = pp.robot->getDOFVelocityLimits();
     pp.control_limits.velocity_limits.resize(vel_limits.rows());
