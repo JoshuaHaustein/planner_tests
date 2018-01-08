@@ -70,6 +70,9 @@ set(ORACLE_TRAINING_DATA_SRC
 set(SDF_TEST_SRC
         src/planner_tests/box2d/testSDF.cpp)
 
+set(ORACLE_EVALUATION_SRC
+        src/planner_tests/box2d/OracleEvaluation.cpp)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include
@@ -101,6 +104,10 @@ add_executable(box2d_oracle_generation
         ${ORACLE_TRAINING_DATA_SRC}
         )
 
+add_executable(box2d_oracle_evaluation
+        ${ORACLE_EVALUATION_SRC}
+        )
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(planner_tests_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -130,6 +137,15 @@ target_link_libraries(box2d_sdf_test
      ${Boost_LIBRARIES}
      ${CMAKE_THREAD_LIBS_INIT}
      ${PROTOBUF_LIBRARY}
+     yaml-cpp
+)
+
+target_link_libraries(box2d_oracle_evaluation
+     ${catkin_LIBRARIES}
+     ${Boost_LIBRARIES}
+     ${CMAKE_THREAD_LIBS_INIT}
+     ${PROTOBUF_LIBRARY}
+#     proto
      yaml-cpp
 )
 #############
