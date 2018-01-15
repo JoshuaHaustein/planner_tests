@@ -1,0 +1,13 @@
+name: hletter
+links:
+  - name: hletter
+    geometry:
+      - [0.    ,  0.    ,  0.0375,  0.    ,  0.0375,  0.1125,  0.    ,  0.1125]
+      - [0.0375,  0.0375,  0.075 ,  0.0375,  0.075 ,  0.075 ,  0.0375,  0.075]
+      - [0.075 ,  0.    ,  0.1125,  0.    ,  0.1125,  0.1125,  0.075 ,  0.1125]
+    mass: 0.5
+    trans_friction: 0.1
+    rot_friction: 0.09
+    contact_friction: 1.5
+    restitution: 1.0
+joints:

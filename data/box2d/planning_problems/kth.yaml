@@ -1,0 +1,34 @@
+world_file: ../worlds/kth_world.yaml
+robot_name: robot
+target_name: box_1
+x_limits: [-0.2, 2.0]
+y_limits: [-0.2, 0.8]
+z_limits: [0.0, 0.0]
+max_velocity: 1.0
+max_rotation_vel: 1.0
+planning_timeout: 180.0
+control_limits:
+  velocity_limits: [0.6, 0.6, 1.4]
+  acceleration_limits: [2, 4, 1.4]
+  duration_limits: [0.05, 0.6]
+collision_policy:
+  static_collisions_allowed: true
+  static_collisions_blacklist: [robot]
+  collisions_blacklist: []
+goals:
+  - object_name: box_1
+    radius: 0.15
+    position: [1.5, 0.3, 0.0]
+  - object_name: box_2
+    radius: 0.15
+    position: [0.5, 0.3, 0.0]
+  - object_name: box_3
+    radius: 0.15
+    position: [1.0, 0.3, 0.0]
+t_max: 8.0
+oracle_type: Learned
+algorithm_type: CompleteSliceOracleRRT
+num_control_samples: 2
+goal_bias: 0.1
+target_bias: 0.1
+robot_bias: 0.1

@@ -17,11 +17,11 @@ collision_policy:
   collisions_blacklist: []
 goals:
   - object_name: box
-    radius: 0.1
     position: [1.6, 0.25, 0.0]
+    radius: 0.1
 t_max: 8.0
-oracle_type: Human
-algorithm_type: SliceOracleRRT
+oracle_type: {{ oracle_type }}
+algorithm_type: {{ algorithm }}
 num_control_samples: 2
 goal_bias: 0.1
 target_bias: 0.1

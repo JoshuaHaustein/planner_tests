@@ -3,8 +3,8 @@ links:
   - name: box
     geometry:
       - [0.0, 0.0, 0.1, 0.0, 0.1, 0.1, 0.0, 0.1]
-    mass: 0.1
-    trans_friction: 0.2
+    mass: 0.2
+    trans_friction: 0.25
     rot_friction: 0.09
     contact_friction: 1.5
     restitution: 1.0
