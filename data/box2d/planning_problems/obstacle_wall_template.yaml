@@ -12,7 +12,7 @@ control_limits:
   acceleration_limits: [2, 4, 1.4]
   duration_limits: [0.05, 0.6]
 collision_policy:
-  static_collisions_allowed: true
+  static_collisions_allowed: false
   static_collisions_blacklist: [robot]
   collisions_blacklist: []
 goals:
@@ -23,10 +23,15 @@ goals:
     radius: 0.15
     position: [0.9, 0.1, 0.0]
 t_max: 8.0
-oracle_type: {{ oracle_type }}
-algorithm_type: {{ algorithm }}
 local_planner_type: Line
-num_control_samples: 2
 goal_bias: 0.1
 target_bias: 0.1
 robot_bias: 0.1
+
+do_slice_ball_projection: true
+
+action_noise: {{ action_noise }}
+algorithm_type: {{ algorithm }}
+num_control_samples: {{ num_control_samples }}
+oracle_type: {{ oracle_type }}
+state_noise: {{ state_noise }}
