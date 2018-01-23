@@ -732,7 +732,7 @@ void PushPlannerWidget::visualizePlanningProblem(const mps::planner::pushing::Pl
     Eigen::Vector3f extents;
     extents[0] = problem.workspace_bounds.x_limits[1] - problem.workspace_bounds.x_limits[0];
     extents[1] = problem.workspace_bounds.y_limits[1] - problem.workspace_bounds.y_limits[0];
-    _drawing_handles.emplace_back(viewer->drawBox(pos, extents, Eigen::Vector4f(0, 0, 0, 0), false, 0.02f));
+    _drawing_handles.emplace_back(viewer->drawBox(pos, extents, Eigen::Vector4f(0, 0, 0, 1), false, 0.01f));
     // 2. reset colors
     std::vector<sim_env::ObjectPtr> objects;
     problem.world->getObjects(objects, true);
