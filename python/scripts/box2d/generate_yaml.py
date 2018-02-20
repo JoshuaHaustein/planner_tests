@@ -57,7 +57,7 @@ def create_planning_yaml_desc(file_name, world_path, object_name='target'):
     problem_desc = {
         'world_file': world_path,
         'robot_name': 'robot',
-        'target_name': object_name,
+        'training_object_name': object_name,
         'x_limits': [-1.5, 1.5],
         'y_limits': [-1.5, 1.5],
         'z_limits': [0.0, 0.0],
