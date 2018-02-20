@@ -1,0 +1,18 @@
+name: rigid_fingers_robot
+base_actuation:
+  translational_velocity_limits: [-2.0, 2.0]
+  translational_acceleration_limits: [-2, 2]
+  rotational_velocity_limits: [-1.54, 1.54]
+  rotational_acceleration_limits: [-1.4, 1.4]
+  use_center_of_mass: true
+links:
+  - name: base
+    geometry:
+    #    0         1         2           3            4            5            6            7
+      - [0.0, 0.0, 0.2, 0.0, 0.2, -0.04, 0.18, -0.08, 0.13, -0.11, 0.07, -0.11, 0.02, -0.08, 0.0, -0.04]
+    mass: 0.8
+    trans_friction: 0.01
+    rot_friction: 0.0001
+    restitution: 1.0
+    contact_friction: 0.1
+joints:
