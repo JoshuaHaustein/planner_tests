@@ -1,4 +1,4 @@
-world_file: ../worlds/slalom_world_1m_2s_slippery.yaml
+world_file: ../worlds/free_world_1m_2s_slippery.yaml
 robot_name: robot
 x_limits: [-0.6, 1.7]
 y_limits: [-0.3, 0.8]
