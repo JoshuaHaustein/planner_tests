@@ -89,6 +89,7 @@ namespace planner_tests {
                 QLineEdit* _max_action_duration;
                 QComboBox* _oracle_selector;
                 QComboBox* _algorithm_selector;
+                QComboBox* _shortcut_selector;
                 QLineEdit* _goal_bias;
                 QLineEdit* _action_noise;
                 QLineEdit* _state_noise;
@@ -97,7 +98,7 @@ namespace planner_tests {
                 QLineEdit* _target_bias;
                 QCheckBox* _static_col_allowed;
                 QLineEdit* _static_col_blacklist;
-                QCheckBox* _slice_ball_projection;
+                QLineEdit* _shortcut_time;
                 QTableWidget* _goals_table;
                 QPushButton* _add_goal_button;
                 QPushButton* _remove_goal_button;

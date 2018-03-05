@@ -154,6 +154,16 @@ void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlan
     } else {
         _algorithm_selector->setCurrentIndex(combo_idx);
     }
+    // set shortcut type
+    std::string shortcut_name = mps::planner::util::yaml::shortcutTypeToString(desc.shortcut_type);
+    combo_idx = _shortcut_selector->findText(QString(shortcut_name.c_str()));
+    if (combo_idx == -1) {
+        logger->logErr("Could not find shorcut type from problem description", log_prefix);
+    } else {
+        _shortcut_selector->setCurrentIndex(combo_idx);
+    }
+    // set shortcut timeout
+    setValue(_shortcut_time, desc.shortcut_timeout);
     // set world bounds
     setValue(_min_x_workbounds, desc.x_limits[0]);
     setValue(_max_x_workbounds, desc.x_limits[1]);
@@ -168,7 +178,6 @@ void PlannerSetupWidget::setPlanningProblem(mps::planner::util::yaml::OraclePlan
     setValue(_time_out_edit, desc.planning_timeout);
     setValue(_num_control_samples, desc.num_control_samples); // only for naive version
     setValue(_t_max_edit, desc.t_max);
-    _slice_ball_projection->setChecked(desc.do_slice_ball_projection);
     // set goal region
     {
         unsigned int idx = 0;
@@ -298,6 +307,16 @@ void PlannerSetupWidget::buildUI() {
     _local_planner_selector->addItem("Line", mps::planner::pushing::PlanningProblem::LocalPlanner::Line);
     _local_planner_selector->addItem("PotentialField", mps::planner::pushing::PlanningProblem::LocalPlanner::PotentialField);
     layout->addWidget(_local_planner_selector, row, col + 1);
+    // Shortcut type
+    ++row;
+    label = new QLabel("Shortcut type");
+    layout->addWidget(label, row, col);
+    _shortcut_selector = new QComboBox();
+    _shortcut_selector->addItem("NoShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::NoShortcut);
+    _shortcut_selector->addItem("NaiveShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::NaiveShortcut);
+    _shortcut_selector->addItem("LocalShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::LocalShortcut);
+    _shortcut_selector->addItem("OracleShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::OracleShortcut);
+    layout->addWidget(_shortcut_selector, row, col + 1);
     ////////////////////////////////////////////////////////////
     ////////////////////// Second column (2 - 4) ///////////////
     bottom_row = std::max(bottom_row, row);
@@ -392,10 +411,10 @@ void PlannerSetupWidget::buildUI() {
     layout->addWidget(_static_col_blacklist, row, col + 2);
     ++row;
     // slice ball projection
-    _slice_ball_projection = new QCheckBox();
-    _slice_ball_projection->setText("Slice ball projection");
-    _slice_ball_projection->setChecked(true);
-    layout->addWidget(_slice_ball_projection, row, col);
+    label = new QLabel(QString("Shortcut timeout"));
+    layout->addWidget(label, row, col);
+    _shortcut_time = new QLineEdit("5.0");
+    layout->addWidget(_shortcut_time, row, col + 1);
     ++row;
     // Goal table
     QStringList header_names;
@@ -520,7 +539,6 @@ void PlannerSetupWidget::configurePlanningProblem(mps::planner::pushing::Plannin
     pp.goal_bias = readValue(_goal_bias, 0.1f);
     pp.action_noise = readValue(_action_noise, 0.001f);
     pp.state_noise = readValue(_state_noise, 0.001f);
-    pp.do_slice_ball_projection  = _slice_ball_projection->isChecked();
     // control bounds
     auto vel_limits = pp.robot->getDOFVelocityLimits();
     pp.control_limits.velocity_limits.resize(vel_limits.rows());
@@ -565,6 +583,14 @@ void PlannerSetupWidget::configurePlanningProblem(mps::planner::pushing::Plannin
         enum_value = mps::planner::pushing::PlanningProblem::LocalPlanner::Line;
     }
     pp.local_planner_type = mps::planner::pushing::PlanningProblem::LocalPlanner(enum_value);
+    // shortcut type
+    enum_value = _shortcut_selector->itemData(_shortcut_selector->currentIndex()).toInt(&ok);
+    if (not ok) {
+        enum_value = mps::planner::pushing::PlanningProblem::ShortcutType::NoShortcut;
+    }
+    pp.shortcut_type = mps::planner::pushing::PlanningProblem::ShortcutType(enum_value);
+    // shortcut timeout
+    pp.max_shortcut_time = readValue(_shortcut_time, 5.0f);
     // collision policy
     pp.collision_policy.setStaticCollisions(_static_col_allowed->isChecked());
     // parse black list

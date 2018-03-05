@@ -18,6 +18,8 @@ goals:
   - object_name: box
     radius: 0.1
     position: [1.4, 0.0, 0.0]
+object_weights_distance_fn:
+  robot: 0.01
 t_max: 8.0
 local_planner_type: Line
 oracle_type: Human
