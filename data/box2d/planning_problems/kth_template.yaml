@@ -37,3 +37,6 @@ algorithm_type: {{ algorithm }}
 num_control_samples: {{ num_control_samples }}
 oracle_type: {{ oracle_type }}
 state_noise: {{ state_noise }}
+shortcut_type: {{ shortcut_type }}
+shortcut_timeout: {{ shortcut_timeout }}
+

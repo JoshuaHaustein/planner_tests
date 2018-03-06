@@ -19,8 +19,6 @@ goals:
     radius: 0.1
     position: [1.4, 0.0, 0.0]
 t_max: 8.0
-oracle_type: {{ oracle_type }}
-algorithm_type: {{ algorithm }}
 local_planner_type: Line
 goal_bias: 0.1
 target_bias: 0.1
@@ -33,3 +31,5 @@ algorithm_type: {{ algorithm }}
 num_control_samples: {{ num_control_samples }}
 oracle_type: {{ oracle_type }}
 state_noise: {{ state_noise }}
+shortcut_type: {{ shortcut_type }}
+shortcut_timeout: {{ shortcut_timeout }}
