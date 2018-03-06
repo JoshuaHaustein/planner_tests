@@ -316,6 +316,7 @@ void PlannerSetupWidget::buildUI() {
     _shortcut_selector->addItem("NaiveShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::NaiveShortcut);
     _shortcut_selector->addItem("LocalShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::LocalShortcut);
     _shortcut_selector->addItem("OracleShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::OracleShortcut);
+    _shortcut_selector->addItem("LocalOracleShortcut", mps::planner::pushing::PlanningProblem::ShortcutType::LocalOracleShortcut);
     layout->addWidget(_shortcut_selector, row, col + 1);
     ////////////////////////////////////////////////////////////
     ////////////////////// Second column (2 - 4) ///////////////
