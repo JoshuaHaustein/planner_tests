@@ -21,6 +21,7 @@ struct DataGenerator {
     sim_env::Box2DWorldPtr world;
     std::string output_file;
     unsigned int num_samples;
+    bool noisy_propagation;
     void run() {
         auto robot = world->getBox2DRobot(problem_desc.robot_name);
         auto target_object = world->getBox2DObject(problem_desc.training_object_name);
@@ -42,7 +43,7 @@ struct DataGenerator {
         mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_spec);
         mps::planner::util::yaml::configurePlanningProblem(problem, problem_desc);
         planner.setup(problem);
-        planner.generateData(output_file, num_samples, header.str(), true);
+        planner.generateData(output_file, num_samples, header.str(), !noisy_propagation);
     }
 };
 
@@ -63,6 +64,7 @@ struct ObjectFilter {
 int main(int argc, const char* const* argv) {
     // declare program options
     bool verbose = false;
+    bool noisy_propagation = false;
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "Show help message")
@@ -70,7 +72,9 @@ int main(int argc, const char* const* argv) {
             ("planning_problem", po::value<std::string>(), "yaml file containing a planning problem definition")
             ("num_samples", po::value<unsigned int>()->default_value(1000), "number of samples")
             ("verbose", po::bool_switch(&verbose), "Set whether debug outputs should be printed")
-            ("threads", po::value<unsigned int>()->default_value(1), "number of threads");
+            ("threads", po::value<unsigned int>()->default_value(1), "number of threads")
+            ("noisy_propagation", po::bool_switch(&noisy_propagation), "If true, propagates each state-action sample multiple"
+            " times with random noise on the dynamics and state");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -85,6 +89,9 @@ int main(int argc, const char* const* argv) {
     if (!vm.count("planning_problem")) {
         std::cout << "Please specify the planning problem to generate data for." << std::endl;
         return 1;
+    }
+    if (noisy_propagation) {
+        std::cout << "Data generation will add random noise on state and dynamics." << std::endl;
     }
     std::string planning_probl_file = vm["planning_problem"].as<std::string>();
     boost::filesystem::path root_path(planning_probl_file);
@@ -121,6 +128,7 @@ int main(int argc, const char* const* argv) {
         data_generator.output_file = output_file + std::to_string(t);
         data_generator.num_samples = vm["num_samples"].as<unsigned int>();
         data_generator.problem_desc = planning_desc;
+        data_generator.noisy_propagation = noisy_propagation;
         data_generator.world = std::make_shared<sim_env::Box2DWorld>();
         data_generator.world->loadWorld(env_desc);
         if (verbose) {

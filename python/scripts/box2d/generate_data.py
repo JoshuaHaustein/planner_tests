@@ -50,7 +50,7 @@ def create_auxilary_files(unique_id, base_path, robot_file, shape, scale, mass, 
     generate_yaml.create_planning_yaml_desc(planning_file, world_file, object_name=shape.get_name())
 
 
-def generate_data(unique_id, base_path, num_threads, b_overwrite, max_waiting_time, fails_log_file):
+def generate_data(unique_id, base_path, num_threads, b_overwrite, max_waiting_time, fails_log_file, noisy_propagation):
     output_file_name = base_path + '/data/' + unique_id + '_'
     output_files = [output_file_name + str(i) for i in range(num_threads)]
     planning_file = create_planning_file_name(unique_id, base_path)
@@ -58,11 +58,15 @@ def generate_data(unique_id, base_path, num_threads, b_overwrite, max_waiting_ti
     if not b_overwrite and files_exist(output_files):
         print "The output files for case %s already exist. Skipping it." % unique_id
     else:
-        child_process = subprocess.Popen(['/home/oracle-trainer/workspace/planning_catkin/devel/lib/planner_tests/box2d_oracle_generation',
+        process_arguments = ['/home/oracle-trainer/workspace/planning_catkin/devel/lib/planner_tests/box2d_oracle_generation',
                                           '--output_file', output_file_name,
                                           '--planning_problem', planning_file,
                                           '--threads', str(num_threads),
-                                          '--num_samples', str(args.num_samples)])
+                                          '--num_samples', str(args.num_samples)]
+        if noisy_propagation:
+            process_arguments.append('--noisy_propagation')
+        print "Running child process ", process_arguments
+        child_process = subprocess.Popen(process_arguments)
         success = wait_to_finish(child_process, max_waiting_time)
         if not success:
             print "Child process seems to be stuck. Killing it and logging failure."
@@ -124,7 +128,8 @@ def generate_list_data(args, max_waiting_time, base_path):
         b_run_failed = generate_data(unique_id=unique_id, base_path=base_path,
                                      num_threads=args.num_threads, b_overwrite=args.overwrite,
                                      max_waiting_time=max_waiting_time,
-                                     fails_log_file=args.fails_log_file)
+                                     fails_log_file=args.fails_log_file,
+                                     noisy_propagation=args.noisy_propagation)
         if b_run_failed:
             num_failures += 1
         counter += 1
@@ -143,7 +148,7 @@ def generate_random_data(args, max_waiting_time, base_path):
         b_run_failed = generate_data(unique_id='random_data', base_path=base_path,
                                      num_threads=args.num_threads, b_overwrite=True,
                                      max_waiting_time=max_waiting_time,
-                                     fails_log_file=args.fails_log_file)
+                                     fails_log_file=args.fails_log_file, noisy_propagation=args.noisy_propagation)
         if b_run_failed:
             num_failures += 1
 
@@ -160,6 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('num_threads', type=int, default=6)
     parser.add_argument('--subset', type=str, default='', help='Optionally only generate data for the cases specified in this file')
     parser.add_argument('--overwrite', dest='overwrite', action='store_true', help='overwrite existing files')
+    parser.add_argument('--noisy_propagation', dest='noisy_propagation', action='store_true', help='If true, make noisy propagations for each state-action pair')
     parser.add_argument('--num_random_dynamics', type=int, dest='num_random_dynamics', default=0,
                         help='If provided, the script randomly samples dynamic parameters instead of taking these from a list.'
                              ' In this case, the auxillary files are overwritten for each case.')
@@ -177,6 +183,6 @@ if __name__ == '__main__':
     else:
         num_failures, total_count = generate_list_data(args, max_waiting_time, base_path)
 
-    print "All data generated. There were %i failures out of %i runs" % (num_failures, total_count)
+    print "All data generated. There were %i failures out of %i runs" % (num_failures, total_count, noisy_propagation)
     if num_failures > 0:
         print "See %s for failures" % args.fails_log_file
