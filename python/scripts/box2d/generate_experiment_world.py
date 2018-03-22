@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     kwargs['action_noise'] = args.action_noise                    # For hybrid, try: [0, 0.5, 1.0]
     kwargs['shortcut_type'] = args.shortcut_type
-    kwards['shortcut_timeout'] = args.shortcut_timeout
+    kwargs['shortcut_timeout'] = args.shortcut_timeout
     rendered = template.render(
         oracle_type=args.oracle_type,
         algorithm=args.algorithm,
