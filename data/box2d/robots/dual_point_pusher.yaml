@@ -1,0 +1,19 @@
+name: dual_point_pusher
+base_actuation:
+  translational_velocity_limits: [-2.0, 2.0]
+  translational_acceleration_limits: [-2, 2]
+  rotational_velocity_limits: [-1.54, 1.54]
+  rotational_acceleration_limits: [-1.4, 1.4]
+  use_center_of_mass: true
+links:
+  - name: pusher
+    geometry:
+      # 1 x    , y ,2  x   , y     , 3  x ,   y , 4 x  ,  y
+      - [-0.05, 0.0, -0.035, -0.015, -0.02, 0.00, -0.035, 0.015]
+      - [0.03, 0.0, 0.045, -0.015, 0.06, 0.00, 0.045, 0.015]
+    mass: 2.5
+    trans_friction: 0.01
+    rot_friction: 0.0001
+    restitution: 1.0
+    contact_friction: 0.1
+joints:
