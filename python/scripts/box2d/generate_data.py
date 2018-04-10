@@ -176,7 +176,7 @@ if __name__ == '__main__':
     create_folder(base_path + '/worlds')
     create_folder(base_path + '/planning_files')
     create_folder(base_path + '/data')
-    max_waiting_time = 180.0
+    max_waiting_time = 360.0
 
     if args.num_random_dynamics > 0:
         num_failures, total_count = generate_random_data(args, max_waiting_time, base_path)
