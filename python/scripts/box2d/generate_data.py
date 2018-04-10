@@ -105,9 +105,9 @@ def generate_cases(subset_file_name):
 
 
 def random_case():
-    scale = 0.15 * random.random() + 0.04
-    mass = 0.01 + random.random() * 0.8
-    mu = 0.006 + random.random() * 0.315
+    scale = 0.08 * random.random() + 0.04
+    mass = 0.01 + random.random() * 0.21
+    mu = 0.01 + random.random() * 0.315
     shape = random.choice(generate_shapes.get_all_shapes())
     return shape, scale, mass, mu
 
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     create_folder(base_path + '/worlds')
     create_folder(base_path + '/planning_files')
     create_folder(base_path + '/data')
-    max_waiting_time = 120.0
+    max_waiting_time = 180.0
 
     if args.num_random_dynamics > 0:
         num_failures, total_count = generate_random_data(args, max_waiting_time, base_path)
