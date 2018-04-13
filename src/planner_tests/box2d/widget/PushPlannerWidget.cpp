@@ -30,14 +30,18 @@ void OracleTestWidget::button_clicked() {
         world->getLogger()->logErr("Could not identify source of button_clicked signal.", log_prefix);
         return;
     }
-   if (button_sender == _start_button) {
-        _last_world_state = world->getWorldState();
+   if (button_sender == _move_pushing_state_button || button_sender == _pushing_policy_button) {
+        _last_world_states.push(world->getWorldState());
         _parent_widget->startOracle(_target_selector->currentText().toStdString(),
                                     readValue(_x_target, 0.0f),
                                     readValue(_y_target, 0.0f),
-                                    readValue(_theta_target, 0.0f));
+                                    readValue(_theta_target, 0.0f),
+                                    button_sender == _move_pushing_state_button);
     } else if (button_sender == _reset_button) {
-        _parent_widget->resetOracle(_last_world_state);
+        if (!_last_world_states.empty()) {
+            _parent_widget->resetOracle(_last_world_states.top());
+            _last_world_states.pop();
+        }
     } else {
         world->getLogger()->logErr("Click event received from an unknown button", log_prefix);
     }
@@ -78,11 +82,18 @@ void OracleTestWidget::buildUI() {
     col = 0;
     ////////////////////////////////////////////////////////////
     ////////////////////// Bottom button ///////////////////////
-    // start button
-    _start_button = new QPushButton();
-    _start_button->setText("Start oracle");
-    layout->addWidget(_start_button, row, col);
-    QObject::connect(_start_button, SIGNAL(clicked()),
+    // move to pushing state button
+    _move_pushing_state_button = new QPushButton();
+    _move_pushing_state_button->setText("Move to sampled pushing state");
+    layout->addWidget(_move_pushing_state_button, row, col);
+    QObject::connect(_move_pushing_state_button, SIGNAL(clicked()),
+                     this, SLOT(button_clicked()));
+    col += 1;
+    // execute pushing policy button
+    _pushing_policy_button = new QPushButton();
+    _pushing_policy_button->setText("Execute Pushing Action");
+    layout->addWidget(_pushing_policy_button, row, col);
+    QObject::connect(_pushing_policy_button, SIGNAL(clicked()),
                      this, SLOT(button_clicked()));
     col += 1;
     // reset button
@@ -105,7 +116,7 @@ void OracleTestWidget::synchUI() {
     for (auto obj : objects) {
         _target_selector->addItem(obj->getName().c_str());
     }
-    _last_world_state = world->getWorldState();
+    _last_world_states.push(world->getWorldState());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -699,7 +710,8 @@ bool PushPlannerWidget::PlannerThread::isInterrupted() {
 }
 
 void PushPlannerWidget::PlannerThread::testOracle() {
-    solution.path = planner.testOracle(oracle_goal);
+    // TODO depending on oracle_approach either only call for an approach action, or for pushing policy
+    solution.path = planner.testOracle(oracle_goal, oracle_approach);
     solution.solved = true;
     playback();
 }
@@ -832,7 +844,7 @@ void PushPlannerWidget::startPlayback() {
     }
 }
 
-void PushPlannerWidget::startOracle(const std::string& target, float x, float y, float theta) {
+void PushPlannerWidget::startOracle(const std::string& target, float x, float y, float theta, bool b_approach) {
     static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::startOracle]");
     auto world = lockWorld();
     auto state = world->getWorldState();
@@ -848,6 +860,7 @@ void PushPlannerWidget::startOracle(const std::string& target, float x, float y,
         _planner_thread.oracle_goal.goal_position[2] = theta;
         _planner_thread.oracle_goal.object_name = target;
         _planner_thread.interrrupt = false;
+        _planner_thread.oracle_approach = b_approach;
         _planner_thread.thread = std::thread(&PlannerThread::testOracle, std::ref(_planner_thread));
     } else {
         world->getLogger()->logWarn("Could not start oracle because the planner thread is still running.", log_prefix);

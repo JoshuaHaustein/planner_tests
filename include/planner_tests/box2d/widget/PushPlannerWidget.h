@@ -44,13 +44,14 @@ namespace planner_tests {
                 private:
                     PushPlannerWidget* _parent_widget;
                     QComboBox* _target_selector;
-                    QPushButton* _start_button;
+                    QPushButton* _move_pushing_state_button;
+                    QPushButton* _pushing_policy_button;
                     QPushButton* _reset_button;
                     QLineEdit* _x_target;
                     QLineEdit* _y_target;
                     QLineEdit* _theta_target;
 
-                    sim_env::WorldState _last_world_state;
+                    std::stack<sim_env::WorldState> _last_world_states;
             };
 
             class PlannerSetupWidget : public QGroupBox {
@@ -131,7 +132,7 @@ namespace planner_tests {
                 void showSDF();
                 void startPlanner();
                 void startPlayback();
-                void startOracle(const std::string& target, float x, float y, float theta);
+                void startOracle(const std::string& target, float x, float y, float theta, bool b_approach);
                 void resetOracle(sim_env::WorldState& previous_state);
                 void stopPlannerThread();
                 sim_env::Box2DRobotVelocityControllerPtr setupRobotController(sim_env::Box2DRobotPtr robot);
@@ -141,6 +142,7 @@ namespace planner_tests {
                     mps::planner::pushing::OraclePushPlanner planner;
                     mps::planner::pushing::PlanningSolution solution;
                     mps::planner::ompl::state::goal::RelocationGoalSpecification oracle_goal;
+                    bool oracle_approach;
                     bool isInterrupted();
                     std::thread thread;
                     bool interrrupt;
