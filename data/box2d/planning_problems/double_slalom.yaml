@@ -1,0 +1,33 @@
+world_file: ../worlds/free_world_2m_2s.yaml
+robot_name: robot
+x_limits: [-0.6, 1.7]
+y_limits: [-0.3, 0.8]
+z_limits: [0.0, 0.0]
+max_velocity: 1.0
+max_rotation_vel: 1.0
+planning_timeout: 180.0
+control_limits:
+  velocity_limits: [0.6, 0.6, 1.4]
+  acceleration_limits: [2, 4, 1.4]
+  duration_limits: [0.05, 0.6]
+collision_policy:
+  static_collisions_allowed: false
+  static_collisions_blacklist: []
+  collisions_blacklist: []
+goals:
+  - object_name: box1
+    radius: 0.1
+    position: [1.4, 0.0, 0.0]
+  - object_name: box2
+    radius: 0.1
+    position: [1.4, 0.6, 0.0]
+t_max: 8.0
+local_planner_type: Line
+goal_bias: 0.1
+target_bias: 0.1
+robot_bias: 0.1
+
+algorithm_type: SliceOracleRRT
+oracle_type: Learned
+shortcut_type: NaiveShortcut
+shortcut_timeout: 20

@@ -12,7 +12,7 @@ control_limits:
   acceleration_limits: [2, 4, 1.4]
   duration_limits: [0.05, 0.6]
 collision_policy:
-  static_collisions_allowed: true
+  static_collisions_allowed: false
   static_collisions_blacklist: [robot]
   collisions_blacklist: []
 goals:
@@ -32,3 +32,5 @@ num_control_samples: 2
 goal_bias: 0.1
 target_bias: 0.1
 robot_bias: 0.1
+shortcut_type: NaiveShortcut
+shortcut_timeout: 20
