@@ -842,7 +842,7 @@ void PushPlannerWidget::startPlayback() {
     if (not _planner_thread.thread.joinable()) {
         world->getLogger()->logInfo("Starting playback", log_prefix);
         _planner_thread.interrrupt = false;
-        _planner_thread.playback_synch = _synch_playback_box->isChecked();
+        _planner_thread.playback_synch = _planner_tab->_synch_playback_box->isChecked();
         _planner_thread.thread = std::thread(&PlannerThread::playback, std::ref(_planner_thread));
     } else {
         world->getLogger()->logWarn("Could not start playback because the planner thread is still running.", log_prefix);
