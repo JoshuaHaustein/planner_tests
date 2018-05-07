@@ -287,10 +287,15 @@ void PlannerSetupWidget::buildUI() {
     layout->addWidget(_time_out_edit, row, col + 1);
     ++row;
     // create semi-dynamic tick box
-    _semi_dynamic_check_box = new QCheckBox();
-    _semi_dynamic_check_box->setText("Semi-dynamic");
-    _semi_dynamic_check_box->setChecked(true);
-    layout->addWidget(_semi_dynamic_check_box, row, col, 1, 1);
+    // _semi_dynamic_check_box = new QCheckBox();
+    // _semi_dynamic_check_box->setText("Semi-dynamic");
+    // _semi_dynamic_check_box->setChecked(true);
+    // layout->addWidget(_semi_dynamic_check_box, row, col, 1, 1);
+    // create playback tick box
+    _synch_playback_box = new QCheckBox();
+    _synch_playback_box->setText("Synch playback");
+    _synch_playback_box->setChecked(true);
+    layout->addWidget(_synch_playback_box, row, col, 1, 1);
     // create debug tick box
     _debug_check_box = new QCheckBox();
     _debug_check_box->setText("Debug");
@@ -701,7 +706,7 @@ void PushPlannerWidget::PlannerThread::plan() {
 
 void PushPlannerWidget::PlannerThread::playback() {
     if (solution.solved) {
-        planner.playback(solution, std::bind(&PushPlannerWidget::PlannerThread::isInterrupted, this));
+        planner.playback(solution, std::bind(&PushPlannerWidget::PlannerThread::isInterrupted, this), playback_synch);
     }
 }
 
@@ -837,6 +842,7 @@ void PushPlannerWidget::startPlayback() {
     if (not _planner_thread.thread.joinable()) {
         world->getLogger()->logInfo("Starting playback", log_prefix);
         _planner_thread.interrrupt = false;
+        _planner_thread.playback_synch = _synch_playback_box->isChecked();
         _planner_thread.thread = std::thread(&PlannerThread::playback, std::ref(_planner_thread));
     } else {
         world->getLogger()->logWarn("Could not start playback because the planner thread is still running.", log_prefix);

@@ -76,6 +76,7 @@ namespace planner_tests {
                 QLineEdit* _time_out_edit;
                 QCheckBox* _semi_dynamic_check_box;
                 QCheckBox* _debug_check_box;
+                QCheckBox* _synch_playback_box;
                 QLineEdit* _t_max_edit;
                 QLineEdit* _num_control_samples;
                 QComboBox* _local_planner_selector;
@@ -146,6 +147,7 @@ namespace planner_tests {
                     bool isInterrupted();
                     std::thread thread;
                     bool interrrupt;
+                    bool playback_synch;
                     void plan();
                     void testOracle();
                     void playback();
