@@ -108,6 +108,8 @@ namespace planner_tests {
                 QPushButton* _start_button;
                 QPushButton* _play_back_button;
                 QPushButton* _show_sdf_button;
+                QPushButton* _save_solution_button;
+                QPushButton* _load_solution_button;
 
                 PushPlannerWidget* _parent_widget;
 
@@ -133,6 +135,8 @@ namespace planner_tests {
                 void showSDF();
                 void startPlanner();
                 void startPlayback();
+                void saveSolution(const std::string& filename);
+                void loadSolution(const std::string& filename);
                 void startOracle(const std::string& target, float x, float y, float theta, bool b_approach);
                 void resetOracle(sim_env::WorldState& previous_state);
                 void stopPlannerThread();

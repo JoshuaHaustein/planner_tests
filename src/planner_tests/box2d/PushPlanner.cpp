@@ -24,9 +24,11 @@ void saveStats(const std::vector<mps::planner::pushing::algorithm::PlanningStati
     of.close();
 }
 
-std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim_env::Box2DWorldPtr world,
-                                                                mps::planner::util::yaml::OraclePlanningProblemDesc& problem_desc,
-                                                                unsigned int num_iter) {
+mps::planner::pushing::PlanningProblem setupPlanningProblem(
+                              sim_env::Box2DWorldPtr world, 
+                              mps::planner::util::yaml::OraclePlanningProblemDesc& problem_desc)
+{
+    // first set up controller for the robot
     auto robot = world->getBox2DRobot(problem_desc.robot_name);
     if (!robot) {
         throw std::runtime_error("Could not find robot " + problem_desc.robot_name);
@@ -36,6 +38,7 @@ std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim
         using namespace std::placeholders;
         robot->setController(std::bind(&sim_env::Box2DRobotVelocityController::control, controller, _1, _2, _3, _4, _5));
     }
+    // prepare goal specifications
     std::vector<mps::planner::ompl::state::goal::RelocationGoalSpecification> goal_specs;
     for (auto& goal_desc : problem_desc.goals) {
         mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(goal_desc.obj_name,
@@ -45,8 +48,16 @@ std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim
                                                                                0.0f);
         goal_specs.push_back(goal_spec);
     }
+    // create planning problem
     mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_specs);
     mps::planner::util::yaml::configurePlanningProblem(problem, problem_desc);
+    return problem; 
+}
+
+std::vector<mps::planner::pushing::algorithm::PlanningStatistics> evaluatePlanner(sim_env::Box2DWorldPtr world,
+                                                                mps::planner::util::yaml::OraclePlanningProblemDesc& problem_desc,
+                                                                unsigned int num_iter) {
+    auto problem = setupPlanningProblem(world, problem_desc);
     mps::planner::pushing::OraclePushPlanner planner;
     std::vector<mps::planner::pushing::algorithm::PlanningStatistics> stats_vector;
     world->getLogger()->logInfo(boost::format("Planning problem setup. Running %i iterations") % num_iter,
@@ -63,6 +74,34 @@ std::vector<mps::planner::pushing::algorithm::PlanningStatistics> runPlanner(sim
     return stats_vector;
 }
 
+/**
+ * Attempts to compute a reproducible solution to the given problem.
+ * If it succeeds to do so, it stores the solution under the given filename, else
+ * it returns false and does not store anything.
+ */
+bool computeValidSolution(sim_env::Box2DWorldPtr world,
+                          mps::planner::util::yaml::OraclePlanningProblemDesc& problem_desc,
+                          unsigned int num_iter,
+                          const std::string& filename) 
+{
+    auto problem = setupPlanningProblem(world, problem_desc);
+    mps::planner::pushing::OraclePushPlanner planner;
+    world->getLogger()->logInfo(boost::format("Planning problem setup. Running %i iterations") % num_iter,
+            "[PushPlanner::runPlanner]");
+    for (unsigned int i = 0; i < num_iter; ++i) {
+        mps::planner::pushing::PlanningSolution sol;
+        planner.setup(problem);
+        planner.solve(sol);
+        bool do_shortcut = problem_desc.shortcut_type != mps::planner::pushing::PlanningProblem::ShortcutType::NoShortcut;
+        if ((do_shortcut && sol.stats.reproducible_after_shortcut) || (sol.stats.reproducible))
+        {
+            // save the solution and quit
+            return planner.saveSolution(sol, filename);
+        }
+    }
+    return false;
+}
+
 int main(int argc, const char* const* argv) {
     const std::string log_prefix("[PushPlanner]");
     // declare program options
@@ -73,7 +112,14 @@ int main(int argc, const char* const* argv) {
             ("planning_problem", po::value<std::string>(), "planning problem to solve")
             ("verbose", po::bool_switch()->default_value(false), "if set, print debug outputs")
             ("output_file", po::value<std::string>(), "File to store stats in")
+            ("record_file", po::value<std::string>()->default_value("/tmp/push_traj"), "File to store the recorded trajectory in")
             ("num_iterations", po::value<unsigned int>()->default_value(1), "number of planning iterations")
+            ("record", po::bool_switch()->default_value(false), "If set and there is no GUI, the application runs"
+                                                                 "the planner up till num_iterations times to produce a single "
+                                                                 "reproducible solution. If it succeeds, it will store "
+                                                                 "the solution in the file specified by the argument record_file."
+                                                                 "If the GUI is set, it will store always the latest reproducible solution "
+                                                                 "computed.")
             ("no-gui", po::bool_switch()->default_value(false), "if set, show no GUI");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -123,11 +169,21 @@ int main(int argc, const char* const* argv) {
         logger->logErr("Please specify a planning problem to solve", log_prefix);
         return 1;
     } else if (vm["no-gui"].as<bool>()) { // we have a planning problem, so plan
-        auto stats = runPlanner(world, problem_desc, vm["num_iterations"].as<unsigned int>());
-        if (vm.count("output_file")) {
-            saveStats(stats, vm["output_file"].as<std::string>());
+        if (vm["record"].as<bool>()) {
+            bool success = computeValidSolution(world, problem_desc,
+                                                vm["num_iterations"].as<unsigned int>(),
+                                                vm["record_file"].as<std::string>());
+            if (!success) {
+                logger->logErr("Failed to compute a reproducible solution for the given problem", log_prefix);
+            }
+        } else {
+            auto stats = evaluatePlanner(world, problem_desc, vm["num_iterations"].as<unsigned int>());
+            if (vm.count("output_file")) {
+                saveStats(stats, vm["output_file"].as<std::string>());
+            }
         }
     } else { // we are showing the GUI
+        // TODO pass record file path
         auto world_viewer = std::dynamic_pointer_cast<sim_env::Box2DWorldViewer>(world->getViewer());
         world_viewer->show(argc, argv);
         auto widget = new widget::PushPlannerWidget(world, world_viewer);

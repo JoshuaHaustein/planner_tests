@@ -6,6 +6,7 @@
 #include <planner_tests/box2d/widget/SliceWidget.h>
 #include <QtGui/QGridLayout>
 #include <QtGui/QLabel>
+#include <QtGui/QFileDialog>
 #include <sim_env/Box2DController.h>
 #include <mps/planner/util/Logging.h>
 
@@ -237,6 +238,16 @@ void PlannerSetupWidget::button_clicked(bool enabled) {
     } else {
         if (button_sender == _show_sdf_button) {
            _parent_widget->showSDF();
+        } else if (button_sender == _save_solution_button) {
+            QString filename = QFileDialog::getOpenFileName(this, QString("Select solution file"));
+            if (filename.length() > 0) {
+                _parent_widget->saveSolution(filename.toStdString());
+            }
+        } else if (button_sender == _load_solution_button) {
+            QString filename = QFileDialog::getOpenFileName(this, QString("Select solution file"));
+            if (filename.length() > 0) {
+                _parent_widget->loadSolution(filename.toStdString());
+            }
         } else {
            _parent_widget->stopPlannerThread();
         }
@@ -474,7 +485,18 @@ void PlannerSetupWidget::buildUI() {
     layout->addWidget(_show_sdf_button, bottom_row, 2);
     QObject::connect(_show_sdf_button, SIGNAL(clicked(bool)),
                      this, SLOT(button_clicked(bool)));
-
+    // save solution button
+    _save_solution_button = new QPushButton();
+    _save_solution_button->setText("Save last solution");
+    layout->addWidget(_save_solution_button, bottom_row, 3);
+    QObject::connect(_save_solution_button, SIGNAL(clicked(bool)),
+                     this, SLOT(button_clicked(bool)));
+    // load solution button
+    _load_solution_button = new QPushButton();
+    _load_solution_button->setText("Load solution");
+    layout->addWidget(_load_solution_button, bottom_row, 4);
+    QObject::connect(_load_solution_button, SIGNAL(clicked(bool)),
+                     this, SLOT(button_clicked(bool)));
     // finally set the layout
     setLayout(layout);
 }
@@ -848,6 +870,28 @@ void PushPlannerWidget::startPlayback() {
         world->getLogger()->logWarn("Could not start playback because the planner thread is still running.", log_prefix);
         world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
+}
+
+void PushPlannerWidget::saveSolution(const std::string& filename) {
+    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::saveSolution]");
+    stopPlannerThread();
+    if (_planner_thread.solution.solved) {
+        auto world = lockWorld();
+        auto logger = world->getLogger();
+        logger->logDebug("Saving solution to file " + filename, log_prefix);
+        _planner_thread.planner.saveSolution(_planner_thread.solution, filename);
+    }
+}
+
+void PushPlannerWidget::loadSolution(const std::string& filename) {
+    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::loadSolution]");
+    stopPlannerThread();
+    auto world = lockWorld();
+    auto logger = world->getLogger();
+    logger->logDebug("Loading solution from file " + filename, log_prefix);
+    auto planning_problem = _planner_tab->getPlanningProblem();
+    _planner_thread.planner.setup(planning_problem); // setup the planner just in case
+    _planner_thread.planner.loadSolution(_planner_thread.solution, filename);
 }
 
 void PushPlannerWidget::startOracle(const std::string& target, float x, float y, float theta, bool b_approach) {
