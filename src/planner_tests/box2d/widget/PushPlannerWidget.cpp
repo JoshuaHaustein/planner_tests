@@ -239,14 +239,24 @@ void PlannerSetupWidget::button_clicked(bool enabled) {
         if (button_sender == _show_sdf_button) {
            _parent_widget->showSDF();
         } else if (button_sender == _save_solution_button) {
-            QString filename = QFileDialog::getOpenFileName(this, QString("Select solution file"));
-            if (filename.length() > 0) {
-                _parent_widget->saveSolution(filename.toStdString());
+            QFileDialog open_file_dialog(this);
+            open_file_dialog.setAcceptMode(QFileDialog::AcceptSave);
+            open_file_dialog.setOption(QFileDialog::Option::DontUseNativeDialog, true);
+            QStringList filenames;
+            if (open_file_dialog.exec()) {
+                filenames = open_file_dialog.selectedFiles();
+                _parent_widget->saveSolution(filenames.at(0).toStdString());
             }
         } else if (button_sender == _load_solution_button) {
-            QString filename = QFileDialog::getOpenFileName(this, QString("Select solution file"));
-            if (filename.length() > 0) {
-                _parent_widget->loadSolution(filename.toStdString());
+            QFileDialog open_file_dialog(this);
+            open_file_dialog.setAcceptMode(QFileDialog::AcceptOpen);
+            open_file_dialog.setOption(QFileDialog::Option::DontUseNativeDialog, true);
+            QStringList filenames;
+            if (open_file_dialog.exec()) {
+                filenames = open_file_dialog.selectedFiles();
+                auto filename = filenames.at(0).toStdString();
+                std::cout << filename << std::endl;
+                _parent_widget->loadSolution(filename);
             }
         } else {
            _parent_widget->stopPlannerThread();
