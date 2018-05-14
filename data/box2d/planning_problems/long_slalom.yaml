@@ -22,7 +22,8 @@ goals:
 t_max: 8.0
 oracle_type: Learned
 algorithm_type: SliceOracleRRT
-shortcut_type: NoShortcut
+shortcut_type: NaiveShortcut
+shortcut_timeout: 10.0
 num_control_samples: 2
 goal_bias: 0.1
 target_bias: 0.1

@@ -4,7 +4,7 @@ robots:
     filename: ../robots/rigid_fingers_robot.yaml
 objects:
   - name: box
-    filename: ../objects/box.yaml
+    filename: ../objects/box_light_slippery.yaml
     static: False
   - name: wall_1
     filename: ../objects/wall.yaml
