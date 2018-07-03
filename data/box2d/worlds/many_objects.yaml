@@ -1,0 +1,95 @@
+scale: 10.0
+robots:
+  - name: robot
+    filename: ../robots/rigid_fingers_robot.yaml
+objects:
+  - name: box
+    filename: ../objects/box.yaml
+    static: False
+  - name: disc
+    filename: ../objects/octagon.yaml
+    static: False
+  - name: long_box
+    filename: ../objects/long_box.yaml
+    static: False
+  - name: box_2
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_3
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_4
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_5
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_6
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_7
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_8
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_9
+    filename: ../objects/box.yaml
+    static: False
+  - name: box_10
+    filename: ../objects/box.yaml
+    static: False
+world_bounds: [-0.2, -0.2, 2.0, 1.2]
+states:
+  - name: robot
+    state:
+      configuration: [0.0, 0.0, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box
+    state:
+      configuration: [0.77, 0.48, -1.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: disc
+    state:
+      configuration: [1.176, 0.62, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: long_box
+    state:
+      configuration: [1.9, 0.37, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_2
+    state:
+      configuration: [1.7, 0.27, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_3
+    state:
+      configuration: [1.2, 0.27, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_4
+    state:
+      configuration: [1.7, 0.47, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_5
+    state:
+      configuration: [0.7, 0.20, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_6
+    state:
+      configuration: [0.2, 0.47, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_7
+    state:
+      configuration: [0.3, 0.97, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_8
+    state:
+      configuration: [0.5, 0.11, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_9
+    state:
+      configuration: [1.1, 0.07, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: box_10
+    state:
+      configuration: [1.9, 0.57, 0.0]
+      velocity: [0.0, 0.0, 0.0]

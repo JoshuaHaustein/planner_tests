@@ -1,0 +1,11 @@
+name: long_box
+links:
+  - name: long_box_link
+    geometry:
+      - [0.0, 0.0, 0.25, 0.0, 0.25, 0.1, 0.0, 0.1]
+    mass: 0.4
+    trans_friction: 0.2
+    rot_friction: 0.09
+    contact_friction: 1.5
+    restitution: 1.0
+joints:

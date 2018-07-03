@@ -58,11 +58,21 @@ set (MOC_HEADERS
         include/planner_tests/box2d/widget/PushPlannerWidget.h
         include/planner_tests/box2d/widget/SliceWidget.h)
 QT4_WRAP_CPP( MOC_SRCS ${MOC_HEADERS})
+
 set(PUSH_PLANNER_SRC
         src/planner_tests/box2d/PushPlanner.cpp
         src/planner_tests/box2d/widget/QtUtils.cpp
         src/planner_tests/box2d/widget/PushPlannerWidget.cpp
         src/planner_tests/box2d/widget/SliceWidget.cpp)
+
+set (MOC_HEADERS_SORT
+        include/planner_tests/box2d/widget/AlphaSortWidget.h)
+QT4_WRAP_CPP( MOC_SRCS_SORT ${MOC_HEADERS_SORT})
+
+set(SORT_PLANNER_SRC
+        src/planner_tests/box2d/AlphaSort.cpp
+        src/planner_tests/box2d/widget/QtUtils.cpp
+        src/planner_tests/box2d/widget/AlphaSortWidget.cpp)
 
 set(ORACLE_TRAINING_DATA_SRC
         src/planner_tests/box2d/OracleTrainingDataGen.cpp)
@@ -96,6 +106,11 @@ include_directories(include
          ${MOC_SRCS}
          )
 
+ add_executable(box2d_alpha_sort
+         ${SORT_PLANNER_SRC}
+         ${MOC_SRCS_SORT}
+         )
+
  add_executable(box2d_sdf_test
          ${SDF_TEST_SRC}
          )
@@ -120,6 +135,15 @@ target_link_libraries(box2d_push_planner
    ${CMAKE_THREAD_LIBS_INIT}
    ${PROTOBUF_LIBRARY}
 #   proto
+   yaml-cpp
+)
+
+target_link_libraries(box2d_alpha_sort
+   ${catkin_LIBRARIES}
+   ${QT_LIBRARIES}
+   ${Boost_LIBRARIES}
+   ${CMAKE_THREAD_LIBS_INIT}
+   ${PROTOBUF_LIBRARY}
    yaml-cpp
 )
 
