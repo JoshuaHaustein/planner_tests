@@ -27,7 +27,7 @@ namespace planner_tests {
             class AlphaSortWidget : public QGroupBox { // the widget needs to inherit from QWidget or a decendant
                 Q_OBJECT
             public:
-                AlphaSortWidget(sim_env::Box2DWorldPtr world, sim_env::Box2DRobotVelocityControllerPtr controller,
+                AlphaSortWidget(mps::planner::sorting::PlanningProblem& planning_problem,
                                 sim_env::Box2DWorldViewerPtr viewer, QWidget* parent=0);
                 ~AlphaSortWidget();
             public slots:
@@ -54,19 +54,19 @@ namespace planner_tests {
                 void startPlayback();
                 // stops the planner or playback
                 void stopPlannerThread();
-                //
-                sim_env::Box2DRobotVelocityControllerPtr setupRobotController(sim_env::Box2DRobotPtr robot);
-                sim_env::Box2DWorldPtr lockWorld();
+                // update the color of objects according to group assignments
+                void updateObjectColors();
+                // check whether the planning problem is fully set up
+                bool isValidPlanningProblem() const;
 
                 // GUI elements
                 QLineEdit* _a_text_box;
                 QPushButton* _start_button;
                 // thread object for running a planner
                 PlannerThread _planner_thread;
-            private:
-                sim_env::Box2DWorldWeakPtr _weak_world;
+                
                 sim_env::Box2DWorldViewerWeakPtr _weak_viewer;
-                sim_env::Box2DRobotVelocityControllerWeakPtr _weak_controller;
+                mps::planner::sorting::PlanningProblem _planning_problem;
                 // drawing handles
                 std::vector<sim_env::WorldViewer::Handle> _drawing_handles;
             };

@@ -3,7 +3,7 @@ robots:
   - name: robot
     filename: ../robots/rigid_fingers_robot.yaml
 objects:
-  - name: box
+  - name: box_1
     filename: ../objects/box.yaml
     static: False
   - name: disc
@@ -45,7 +45,7 @@ states:
     state:
       configuration: [0.0, 0.0, 0.0]
       velocity: [0.0, 0.0, 0.0]
-  - name: box
+  - name: box_1
     state:
       configuration: [0.77, 0.48, -1.0]
       velocity: [0.0, 0.0, 0.0]

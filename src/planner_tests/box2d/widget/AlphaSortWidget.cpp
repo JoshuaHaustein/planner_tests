@@ -10,15 +10,23 @@
 #include <mps/planner/util/Logging.h>
 
 using namespace planner_tests::box2d::widget;
+namespace mps_sorting = mps::planner::sorting;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////// AlphaSortWidget /////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-AlphaSortWidget::AlphaSortWidget(sim_env::Box2DWorldPtr world, sim_env::Box2DRobotVelocityControllerPtr controller,
+unsigned int NUM_GROUP_COLORS = 6;
+float GROUP_COLORS[6][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0},
+                            {0.5, 0.5, 0.0}, {0.0, 0.5, 0.5}, {0.5, 0.0, 0.5}};
+
+
+AlphaSortWidget::AlphaSortWidget(mps_sorting::PlanningProblem& planning_problem,
                                  sim_env::Box2DWorldViewerPtr viewer, QWidget* parent) :
-    QGroupBox("AlphaSortWidget", parent), _weak_world(world), _weak_viewer(viewer), _weak_controller(controller)
+    QGroupBox("AlphaSortWidget", parent),_weak_viewer(viewer), _planning_problem(planning_problem)
 {
     buildUI(); // fill this GUI element with content
+    _planning_problem.stopping_condition = std::bind(&AlphaSortWidget::PlannerThread::isInterrupted, std::ref(_planner_thread));
+    updateObjectColors();
 }
 
 AlphaSortWidget::~AlphaSortWidget() = default;
@@ -26,7 +34,7 @@ AlphaSortWidget::~AlphaSortWidget() = default;
 void AlphaSortWidget::button_clicked(bool enabled) {
     // This function is called when the user clicks _start_button
     static std::string log_prefix("[planner_tests::box2d::widget::AlphaSortWidget::button_clicked]");
-    auto world = lockWorld(); // see lockWorld for what this does
+    auto world = _planning_problem.world; 
     // we can identify the source of this call by calling QObject::sender() and compare it to
     // the buttons that we have
     auto* button_sender = dynamic_cast<QPushButton*>(QObject::sender());
@@ -37,6 +45,7 @@ void AlphaSortWidget::button_clicked(bool enabled) {
     }
     if (enabled) { // enabled is true if the button is clicked
         if (button_sender == _start_button) {
+            updateObjectColors();
             // here you can start your planner
             startPlanner();
             // for now, let us just read the text the user put in in the text box
@@ -111,35 +120,21 @@ bool AlphaSortWidget::PlannerThread::isInterrupted() {
     return interrrupt;
 }
 
-sim_env::Box2DWorldPtr AlphaSortWidget::lockWorld() {
-    // returns a pointed to the world
-    // we only keep a weak reference to the world, that is we do not own it and do not keep it alive.
-    // Some other part of the program has ownership over it, see C++11 documentation for details
-    sim_env::Box2DWorldPtr world = _weak_world.lock();
-    if (!world) {
-        throw std::logic_error("[planner_tests::box2d::widget::lockWorld] Could not access Box2dWorld.");
-    }
-    return world;
-}
-
 void AlphaSortWidget::startPlanner() {
     static std::string log_prefix("[planner_tests::box2d::widget::AlphaSortWidget::startPlanner]");
-    auto world = lockWorld();
+    auto world = _planning_problem.world;
     // let's launch the planner in a separate thread
     if (not _planner_thread.thread.joinable()) { // if the thread is not already running
+        // first check if the planning problem is fully defined, i.e. whether we actually have groups for all objects
+        if (_planning_problem.sorting_groups.empty()) {
+            world->getLogger()->logErr("Cannot start planner. No sorting groups set.", log_prefix);
+            return;
+        }
+        if (!isValidPlanningProblem()) return;
         world->getLogger()->logInfo("Starting planner", log_prefix);
         mps::planner::util::logging::setLogger(world->getLogger());
         _planner_thread.interrrupt = false;
-        // setup the planning problem
-        // for this we need to have access to the robot and its controller, which was passed
-        // to the constructor of this widget
-        auto controller = _weak_controller.lock();
-        if (!controller) {
-            world->getLogger()->logErr("Could not access robot controller. Can not plan.", log_prefix);
-            return;
-        }
-        mps::planner::sorting::PlanningProblem planning_problem(world, controller->getRobot(), controller);
-        _planner_thread.planner.setup(planning_problem);
+        _planner_thread.planner.setup(_planning_problem);
         // the following line creates a thread object and tells this thread to execute
         // the plan function of the _planner_thread object. This is the function defined a few line above,
         // i.e. AlphaSortWidget::PlannerThread::plan
@@ -152,7 +147,7 @@ void AlphaSortWidget::startPlanner() {
 
 void AlphaSortWidget::stopPlannerThread() {
     static std::string log_prefix("[planner_tests::box2d::widget::AlphaSortPlanner::stopPlannerThread]");
-    auto world = lockWorld();
+    auto world = _planning_problem.world;
     if (_planner_thread.thread.joinable()) {
         world->getLogger()->logInfo("Stopping planner...", log_prefix);
         _planner_thread.interrrupt = true;
@@ -165,7 +160,7 @@ void AlphaSortWidget::startPlayback() {
     // this fuction is similiar to startPlanner, but lets the thread execute the playback
     // function which is there so playback a solution found by the planner
     static std::string log_prefix("[planner_tests::box2d::widget::AlphaSortWidget::startPlayback]");
-    auto world = lockWorld();
+    auto world = _planning_problem.world;
     if (not _planner_thread.thread.joinable()) {
         world->getLogger()->logInfo("Starting playback", log_prefix);
         _planner_thread.interrrupt = false;
@@ -180,4 +175,44 @@ void AlphaSortWidget::startPlayback() {
         world->getLogger()->logWarn("Could not start playback because the planner thread is still running.", log_prefix);
         world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
+}
+
+void AlphaSortWidget::updateObjectColors() {
+    auto viewer = _weak_viewer.lock();
+    if (!viewer) return; // TODO print error msg
+    auto world_view = viewer->getWorldViewer();
+    auto logger = _planning_problem.world->getLogger();
+    // TODO reset colors
+    for (auto& elem : _planning_problem.sorting_groups) {
+        auto idx = elem.second % NUM_GROUP_COLORS;
+        if (elem.second > NUM_GROUP_COLORS) {
+            logger->logWarn("More groups than available colors."
+                            " Some groups will have identical colors.",
+                            "[AlphaSortWidget::updateObjectColors]");
+        }
+        world_view->setColor(elem.first, GROUP_COLORS[idx][0], GROUP_COLORS[idx][1], GROUP_COLORS[idx][2]);
+    }
+}
+
+bool AlphaSortWidget::isValidPlanningProblem() const {
+    // check whether we have a world
+    if (!_planning_problem.world or !_planning_problem.robot or !_planning_problem.robot_controller) {
+        return false;
+    }
+    auto logger = _planning_problem.world->getLogger();
+    // check whether we have groups for all objects
+    std::vector<sim_env::ObjectConstPtr> objects;
+    _planning_problem.world->getObjects(objects);
+    bool problem_valid = true;
+    for (auto& object : objects) {
+        if (!object->isStatic()) {
+            auto map_iter = _planning_problem.sorting_groups.find(object->getName());
+            if (map_iter == _planning_problem.sorting_groups.end()) {
+                auto msg = boost::format("Planning problem invalid. Group assignment for %s is missing.") % object->getName();
+                logger->logWarn(msg, "[AlphaSortWidget::isValidPlanningProblem()");
+                problem_valid = false;
+            }
+        }
+    }
+    return problem_valid;
 }

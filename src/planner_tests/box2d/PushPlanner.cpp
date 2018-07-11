@@ -153,7 +153,6 @@ int main(int argc, const char* const* argv) {
         root_path = root_path.parent_path();
         YAML::Node node = YAML::LoadFile(planning_probl_file);
         problem_desc = node.as<mps::planner::util::yaml::OraclePlanningProblemDesc>();
-        sim_env::Box2DEnvironmentDescription env_desc;
         world->loadWorld(sim_env::resolveFileName(problem_desc.world_file, root_path));
         planning_problem_defined = true;
     } else if (vm.count("environment")) { // just an environment
