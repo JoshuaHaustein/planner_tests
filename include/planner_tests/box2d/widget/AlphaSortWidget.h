@@ -54,7 +54,7 @@ namespace box2d {
             // stops the planner or playback
             void stopPlannerThread();
             // update the color of objects according to group assignments
-            void updateObjectColors();
+            // void updateObjectColors();
             // check whether the planning problem is fully set up
             bool isValidPlanningProblem() const;
 

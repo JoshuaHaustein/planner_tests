@@ -15,9 +15,9 @@ namespace mps_sorting = mps::planner::sorting;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////// AlphaSortWidget /////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-unsigned int NUM_GROUP_COLORS = 6;
-float GROUP_COLORS[6][3] = { { 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 }, { 0.0, 0.0, 1.0 },
-    { 0.5, 0.5, 0.0 }, { 0.0, 0.5, 0.5 }, { 0.5, 0.0, 0.5 } };
+// unsigned int NUM_GROUP_COLORS = 6;
+// float GROUP_COLORS[6][3] = { { 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 }, { 0.0, 0.0, 1.0 },
+// { 0.5, 0.5, 0.0 }, { 0.0, 0.5, 0.5 }, { 0.5, 0.0, 0.5 } };
 
 AlphaSortWidget::AlphaSortWidget(mps_sorting::PlanningProblem& planning_problem,
     sim_env::Box2DWorldViewerPtr viewer, QWidget* parent)
@@ -27,7 +27,7 @@ AlphaSortWidget::AlphaSortWidget(mps_sorting::PlanningProblem& planning_problem,
 {
     buildUI(); // fill this GUI element with content
     _planning_problem.stopping_condition = std::bind(&AlphaSortWidget::PlannerThread::isInterrupted, std::ref(_planner_thread));
-    updateObjectColors();
+    // updateObjectColors();
 }
 
 AlphaSortWidget::~AlphaSortWidget() = default;
@@ -47,7 +47,7 @@ void AlphaSortWidget::button_clicked(bool enabled)
     }
     if (button_sender == _start_button) {
         if (enabled) { // enabled is true if the button is clicked
-            updateObjectColors();
+            // updateObjectColors();
             // here you can start your planner
             startPlanner();
             // for now, let us just read the text the user put in in the text box
@@ -65,7 +65,7 @@ void AlphaSortWidget::button_clicked(bool enabled)
         // render the current image
         auto viewer = _weak_viewer.lock();
         std::string fname("/tmp/test_image.png");
-        viewer->centerCamera();
+        viewer->centerCamera(true);
         bool success = viewer->renderImage(fname, 200, 200);
         if (success) {
             world->getLogger()->logInfo("Saved image at " + fname, log_prefix);
@@ -204,24 +204,24 @@ void AlphaSortWidget::startPlayback()
     }
 }
 
-void AlphaSortWidget::updateObjectColors()
-{
-    auto viewer = _weak_viewer.lock();
-    if (!viewer)
-        return; // TODO print error msg
-    auto world_view = viewer->getWorldViewer();
-    auto logger = _planning_problem.world->getLogger();
-    // TODO reset colors
-    for (auto& elem : _planning_problem.sorting_groups) {
-        auto idx = elem.second % NUM_GROUP_COLORS;
-        if (elem.second > NUM_GROUP_COLORS) {
-            logger->logWarn("More groups than available colors."
-                            " Some groups will have identical colors.",
-                "[AlphaSortWidget::updateObjectColors]");
-        }
-        world_view->setColor(elem.first, GROUP_COLORS[idx][0], GROUP_COLORS[idx][1], GROUP_COLORS[idx][2]);
-    }
-}
+// void AlphaSortWidget::updateObjectColors()
+// {
+//     auto viewer = _weak_viewer.lock();
+//     if (!viewer)
+//         return; // TODO print error msg
+//     auto world_view = viewer->getWorldViewer();
+//     auto logger = _planning_problem.world->getLogger();
+//     // TODO reset colors
+//     for (auto& elem : _planning_problem.sorting_groups) {
+//         auto idx = elem.second % NUM_GROUP_COLORS;
+//         if (elem.second > NUM_GROUP_COLORS) {
+//             logger->logWarn("More groups than available colors."
+//                             " Some groups will have identical colors.",
+//                 "[AlphaSortWidget::updateObjectColors]");
+//         }
+//         world_view->setColor(elem.first, GROUP_COLORS[idx][0], GROUP_COLORS[idx][1], GROUP_COLORS[idx][2]);
+//     }
+// }
 
 bool AlphaSortWidget::isValidPlanningProblem() const
 {
