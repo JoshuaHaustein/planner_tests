@@ -167,6 +167,14 @@ int main(int argc, const char* const* argv)
         // you don't want to do this when you are evaluating the runtime of your algorithm.
         logger->logInfo("You started AlphaSort without a GUI. Nothing to do here, yet", log_prefix);
         world_viewer->renderImage("/tmp/no_viewer_image.png", 500, 200);
+        std::vector<sim_env::ObjectPtr> objects;
+        planning_problem.world->getObjects(objects);
+        Eigen::VectorXf pos = objects[0]->getDOFPositions();
+        pos[0] += 0.0;
+        pos[1] += 0.0;
+        pos[2] += 0.9;
+        objects[0]->setDOFPositions(pos);
+        world_viewer->renderImage("/tmp/no_viewer_image2.png", 500, 200);
         return 0;
     } else { // we want to show a GUI
         // let's get the WorldViewer that comes with Box2DSimEnv
