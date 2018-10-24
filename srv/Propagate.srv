@@ -1,0 +1,6 @@
+# request
+float32[] action_params  # action parameters to propagate
+---
+# response
+bool valid_propagation  # true if action propagation leads to valid state
+bool service_success  # true if service request was valid

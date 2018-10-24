@@ -1,0 +1,7 @@
+# request
+string[] obj_names  # defines what objects the values in states belong to
+geometry_msgs/Pose2D[] states  # x, y, theta for each object / robot
+---
+# response
+bool valid_state  # true if the set state is valid
+bool service_success  # true if the service request was valid

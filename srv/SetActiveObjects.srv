@@ -1,0 +1,6 @@
+# request
+string[] obj_name  # names of object to change active status
+bool[] active  # false for inactive, true for active
+---
+# response
+bool service_success  # true if the service was successful

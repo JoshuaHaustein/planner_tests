@@ -1,0 +1,5 @@
+# request
+---
+# response
+string[] obj_names  # defines what objects the values in states belong to
+geometry_msgs/Pose2D[] states  # x, y, theta for each object / robot

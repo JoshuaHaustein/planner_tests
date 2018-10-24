@@ -1,0 +1,7 @@
+# request
+---
+# response
+uint32 dof_action_space  # dimension of the action space
+float32[] lower_bounds  # lower bounds of action space
+float32[] upper_bounds  # lower bounds of action space
+bool[] is_cyclic  # true if an action dimension is cyclic

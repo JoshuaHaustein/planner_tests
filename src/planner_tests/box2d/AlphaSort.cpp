@@ -101,7 +101,7 @@ void set_colors(sim_env::Box2DWorldViewerPtr viewer, const mps::planner::sorting
     }
 }
 
-int main(int argc, const char* const* argv)
+int main(int argc, char** argv)
 {
     const std::string log_prefix("[AlphaSort]");
     // declare program options

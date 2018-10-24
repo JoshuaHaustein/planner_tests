@@ -7,10 +7,14 @@ project(planner_tests)
 find_package(catkin REQUIRED
         COMPONENTS
         cmake_modules
+        roscpp
         sim_env
         box2d_sim_env
         manipulation_planning_suite
-        )
+        std_msgs
+        geometry_msgs
+        message_generation
+)
 
 ## System dependencies are found with CMake's conventions
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED) # TODO: I do not understand why we need this. Shoudn't this be 'inherited' from box2d_sim_env????
@@ -26,6 +30,21 @@ pkg_check_modules(YAML REQUIRED yaml-cpp)
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
 
+add_service_files(
+        FILES 
+        GetActionSpaceInfo.srv
+        GetObjectProperties.srv
+        GetState.srv
+        Propagate.srv
+        SetActiveObjects.srv
+        SetState.srv
+)
+
+generate_messages (
+        DEPENDENCIES 
+        std_msgs
+        geometry_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -83,6 +102,13 @@ set(SDF_TEST_SRC
 set(ORACLE_EVALUATION_SRC
         src/planner_tests/box2d/OracleEvaluation.cpp)
 
+set(TRAINING_SERVER_SRC
+        src/planner_tests/box2d/OracleTrainingServer.cpp
+        src/planner_tests/box2d/training_server/ROSTrainingServer.cpp
+        src/planner_tests/box2d/widget/QtUtils.cpp
+        src/planner_tests/box2d/widget/PushPlannerWidget.cpp
+        src/planner_tests/box2d/widget/SliceWidget.cpp)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include
@@ -122,6 +148,11 @@ add_executable(box2d_oracle_generation
 add_executable(box2d_oracle_evaluation
         ${ORACLE_EVALUATION_SRC}
         )
+
+add_executable(box2d_training_server
+        ${TRAINING_SERVER_SRC}
+        ${MOC_SRCS}
+)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -172,6 +203,15 @@ target_link_libraries(box2d_oracle_evaluation
 #     proto
      yaml-cpp
 )
+
+target_link_libraries(box2d_training_server
+     ${catkin_LIBRARIES}
+     ${Boost_LIBRARIES}
+     ${CMAKE_THREAD_LIBS_INIT}
+     ${PROTOBUF_LIBRARY}
+     yaml-cpp
+)
+
 #############
 ## Install ##
 #############

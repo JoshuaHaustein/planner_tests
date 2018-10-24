@@ -103,7 +103,7 @@ bool computeValidSolution(sim_env::Box2DWorldPtr world,
     return false;
 }
 
-int main(int argc, const char* const* argv)
+int main(int argc, char** argv)
 {
     const std::string log_prefix("[PushPlanner]");
     // declare program options
