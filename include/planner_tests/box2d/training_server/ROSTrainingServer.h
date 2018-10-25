@@ -48,8 +48,12 @@ namespace box2d {
             ros::NodeHandle _nhandle;
             mps::planner::pushing::PlanningProblem _planning_problem;
             sim_env::Box2DWorldPtr _box2d_world;
+            sim_env::Box2DRobotPtr _box2d_robot;
             sim_env::LoggerPtr _logger;
             mps::planner::pushing::OraclePushPlanner _planner;
+            mps::planner::ompl::control::RampVelocityControl* _control;
+            mps::planner::ompl::state::SimEnvWorldState* _current_state;
+            mps::planner::ompl::state::SimEnvWorldState* _resulting_state;
 
             ros::ServiceServer _get_properties_service;
             ros::ServiceServer _get_action_space_info_service;
@@ -57,6 +61,8 @@ namespace box2d {
             ros::ServiceServer _propagate_service;
             ros::ServiceServer _set_active_objects_service;
             ros::ServiceServer _set_state_service;
+
+            void cleanup();
         };
     }
 }

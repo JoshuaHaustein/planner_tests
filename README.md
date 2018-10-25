@@ -10,7 +10,7 @@ This repostitory contains tests for the manipulation_planning_suite.
 - Qt4
 - protobuf
 - ompl (1.3.2)
-- ROS Indigo Desktop, ROS Lunar Desktop, (maybe others work as well)
+- ROS Indigo Desktop, ROS Lunar Desktop, ROS Melodic (maybe others work as well)
 
 Apart from ompl you should be able to install all dependencies from the standard Ubuntu repositories. 
 For the installation of ompl, go to http://ompl.kavrakilab.org/download.html and then follow the instructions on 
@@ -36,10 +36,10 @@ Next, you need to create a catkin workspace:
 
 Now you need to download our repos:
 ```shell
-  git clone git@gits-15.sys.kth.se:haustein/manipulation_planning_suite.git
-  git clone git@gits-15.sys.kth.se:haustein/planner_tests.git
-  git clone git@gits-15.sys.kth.se:haustein/sim_env.git
-  git clone git@gits-15.sys.kth.se:haustein/box2d_sim_env.git
+  git clone git@github.com:JoshuaHaustein/manipulation_planning_suite.git
+  git clone git@github.com:JoshuaHaustein/planner_tests.git
+  git clone git@github.com:JoshuaHaustein/sim_env.git
+  git clone git@github.com:JoshuaHaustein/box2d_sim_env.git
   git clone https://github.com/JoshuaHaustein/box2d_catkin.git
 ```
 
@@ -62,3 +62,24 @@ Alternatively, you can also only load an environment using
 ```shell
   rosrun planner_tests box2d_push_planner --environment src/planner_tests/data/box2d/worlds/free_world_1m_0s.yaml
 ```
+
+## Running and using the oracle training server
+To train the oracle online, you can access the simulator through a Python interface.
+For this run the server:
+```shell
+  source devel/setup.bash
+  rosrun planner_tests box2d_training_server --planning_problem src/planner_tests/data/box2d/planning_problems/training_problem.yaml
+```
+
+Next, open a new terminal (in your catkin workspace) and run:
+```shell
+  source devel/setup.bash
+  ipython
+```
+Run the following to communicate with the server:
+```python
+  import planner_tests.ros_oracle_bridge
+  bridge = bridge = planner_tests.ros_oracle_bridge.ROSOracleBridge()
+```
+
+Check the member functions of the bridge to see what you can do with it.
