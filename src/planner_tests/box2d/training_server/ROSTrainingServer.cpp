@@ -152,8 +152,15 @@ bool ROSTrainingServer::set_active_objects(planner_tests::SetActiveObjects::Requ
 {
     const static std::string log_prefix("ROSTrainingServer::set_active_objects");
     _logger->logDebug("Setting active objects", log_prefix);
-    // TODO figure out how to activate and deactivate objects in box2d
-    std::cout << "set_active_objects" << std::endl;
+    if (req.obj_names.size() != req.active.size()) {
+        res.service_success = false;
+        return false;
+    }
+    for (size_t i = 0; i < req.obj_names.size(); ++i) {
+        auto object = _box2d_world->getObject(req.obj_names[i], false);
+        object->setEnabled(req.active[i]);
+    }
+    res.service_success = true;
     return true;
 }
 

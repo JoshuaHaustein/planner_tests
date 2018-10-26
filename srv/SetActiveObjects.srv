@@ -1,5 +1,5 @@
 # request
-string[] obj_name  # names of object to change active status
+string[] obj_names  # names of object to change active status
 bool[] active  # false for inactive, true for active
 ---
 # response
