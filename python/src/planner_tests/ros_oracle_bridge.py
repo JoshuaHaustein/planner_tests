@@ -1,7 +1,6 @@
 #! /usr/bin/python
 import rospy
 import numpy
-import itertools
 from planner_tests.srv import *
 from geometry_msgs.msg import Pose2D
 
@@ -112,7 +111,7 @@ class ROSOracleBridge(object):
             state, numpy array of shape (n, 3) - each row is x, y, theta for one object/robot
         """
         response = self._get_state_service()
-        name_state_map = dict(itertools.izip(
+        name_state_map = dict(zip(
             response.obj_names, [[pose.x, pose.y, pose.theta] for pose in response.states]))
         return numpy.array([name_state_map[name] for name in self._all_entities_names])
 
