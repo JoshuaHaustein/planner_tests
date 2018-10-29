@@ -130,10 +130,10 @@ class ROSOracleBridge(object):
         name_state_map = dict(zip(
             response.obj_names, [[pose.x, pose.y, pose.theta] for pose in response.states]))
         if b_active_only:
-            object_names = self._all_entities_names
-        else:
             object_names = [self._robot_name]
             object_names.extend(self._active_objects)
+        else:
+            object_names = self._all_entities_names
         return numpy.array([name_state_map[name] for name in object_names])
 
     def set_active(self, obj_name):
@@ -165,7 +165,8 @@ class ROSOracleBridge(object):
             raise RuntimeError("Could not set activity for objects " + str(active_mapping.keys()))
         old_active_objects = set(self._active_objects)
         deactivated_objects = set([obj_name for (obj_name, b_active) in active_mapping.iteritems() if not b_active])
-        activated_objects = set([obj_name for (obj_name, b_active) in active_mapping.iteritems() if b_active])
+        activated_objects = set([obj_name for (obj_name, b_active) in active_mapping.iteritems()
+                                 if b_active and obj_name != self._robot_name])
         self._active_objects = old_active_objects - deactivated_objects | activated_objects
 
     def propagate(self, action):
