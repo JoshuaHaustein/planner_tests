@@ -85,11 +85,13 @@ bool loadPlanningProblem(const std::string& filename, mps::planner::sorting::Pla
     return false;
 }
 
-void set_colors(sim_env::Box2DWorldViewerPtr viewer, const mps::planner::sorting::PlanningProblem& problem)
+void set_colors(sim_env::Box2DWorldViewerPtr viewer, sim_env::Box2DWorldViewer::ImageRendererPtr renderer,
+    const mps::planner::sorting::PlanningProblem& problem)
 {
-    auto world_view = viewer->getWorldViewer();
     auto logger = problem.world->getLogger();
     // TODO reset colors
+    Eigen::Vector4f color;
+    color[3] = 1.0f;
     for (auto& elem : problem.sorting_groups) {
         auto idx = elem.second % NUM_GROUP_COLORS;
         if (elem.second > NUM_GROUP_COLORS) {
@@ -97,7 +99,15 @@ void set_colors(sim_env::Box2DWorldViewerPtr viewer, const mps::planner::sorting
                             " Some groups will have identical colors.",
                 "[AlphaSortWidget::updateObjectColors]");
         }
-        world_view->setColor(elem.first, GROUP_COLORS[idx][0], GROUP_COLORS[idx][1], GROUP_COLORS[idx][2]);
+        color[0] = GROUP_COLORS[idx][0];
+        color[1] = GROUP_COLORS[idx][1];
+        color[2] = GROUP_COLORS[idx][2];
+        if (viewer) {
+            viewer->setColor(elem.first, color);
+        }
+        if (renderer) {
+            renderer->setColor(elem.first, color);
+        }
     }
 }
 
@@ -160,14 +170,16 @@ int main(int argc, const char* const* argv)
     // in order to be able to render (also to image)
     auto world_viewer = std::dynamic_pointer_cast<sim_env::Box2DWorldViewer>(planning_problem.world->getViewer());
     world_viewer->init(argc, argv);
-    set_colors(world_viewer, planning_problem); // set the colors of objects
     if (vm["no-gui"].as<bool>()) { // in case we have no gui, we need a full problem
         // To evaluate the planner you will want to execute the algorithm without a GUI.
         // This would be done here. Running the planner with the GUI slows things down, so
         // you don't want to do this when you are evaluating the runtime of your algorithm.
         logger->logInfo("You started AlphaSort without a GUI. Nothing to do here, yet", log_prefix);
-        world_viewer->setVisible("robot", false);
-        world_viewer->renderImage("/tmp/no_viewer_image.png", 500, 200);
+        // Thread safe method for rendering images
+        auto renderer = world_viewer->createImageRenderer();
+        set_colors(nullptr, renderer, planning_problem); // set the colors of objects
+        renderer->setVisible("robot", false);
+        renderer->renderImage("/tmp/no_viewer_image.png", 500, 200);
         std::vector<sim_env::ObjectPtr> objects;
         planning_problem.world->getObjects(objects);
         Eigen::VectorXf pos = objects[0]->getDOFPositions();
@@ -175,10 +187,11 @@ int main(int argc, const char* const* argv)
         pos[1] += 0.0;
         pos[2] += 0.9;
         objects[0]->setDOFPositions(pos);
-        world_viewer->setVisible("robot", true);
-        world_viewer->renderImage("/tmp/no_viewer_image2.png", 500, 200);
+        renderer->setVisible("robot", true);
+        renderer->renderImage("/tmp/no_viewer_image2.png", 500, 200);
         return 0;
     } else { // we want to show a GUI
+        set_colors(world_viewer, nullptr, planning_problem); // set the colors of objects
         // let's get the WorldViewer that comes with Box2DSimEnv
         // the viewer is the window that launches when you execute this executable
         // for it to show up we need to call its show function
