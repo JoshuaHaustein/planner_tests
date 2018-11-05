@@ -45,54 +45,6 @@ mps::planner::pushing::PlanningProblem setupPlanningProblem(
     return problem;
 }
 
-std::vector<mps::planner::pushing::algorithm::PlanningStatistics> evaluatePlanner(sim_env::Box2DWorldPtr world,
-    mps::planner::util::yaml::OraclePlanningProblemDesc& problem_desc,
-    unsigned int num_iter)
-{
-    auto problem = setupPlanningProblem(world, problem_desc);
-    mps::planner::pushing::OraclePushPlanner planner;
-    std::vector<mps::planner::pushing::algorithm::PlanningStatistics> stats_vector;
-    world->getLogger()->logInfo(boost::format("Planning problem setup. Running %i iterations") % num_iter,
-        "[PushPlanner::runPlanner]");
-    for (unsigned int i = 0; i < num_iter; ++i) {
-        world->getLogger()->logInfo(boost::format("Running test %i/%i") % (i + 1) % num_iter, "[PushPlanner::runPlanner]");
-        mps::planner::pushing::PlanningSolution sol;
-        planner.setup(problem);
-        planner.solve(sol);
-        stats_vector.push_back(sol.stats);
-    }
-    world->getLogger()->logInfo("Planning evaluations completed.",
-        "[PushPlanner::runPlanner]");
-    return stats_vector;
-}
-
-/**
- * Attempts to compute a reproducible solution to the given problem.
- * If it succeeds to do so, it stores the solution under the given filename, else
- * it returns false and does not store anything.
- */
-bool computeValidSolution(sim_env::Box2DWorldPtr world,
-    mps::planner::util::yaml::OraclePlanningProblemDesc& problem_desc,
-    unsigned int num_iter,
-    const std::string& filename)
-{
-    auto problem = setupPlanningProblem(world, problem_desc);
-    mps::planner::pushing::OraclePushPlanner planner;
-    world->getLogger()->logInfo(boost::format("Planning problem setup. Running %i iterations") % num_iter,
-        "[PushPlanner::runPlanner]");
-    for (unsigned int i = 0; i < num_iter; ++i) {
-        mps::planner::pushing::PlanningSolution sol;
-        planner.setup(problem);
-        planner.solve(sol);
-        bool do_shortcut = problem_desc.shortcut_type != mps::planner::pushing::PlanningProblem::ShortcutType::NoShortcut;
-        if ((do_shortcut && sol.stats.reproducible_after_shortcut) || (sol.stats.reproducible)) {
-            // save the solution and quit
-            return planner.saveSolution(sol, filename);
-        }
-    }
-    return false;
-}
-
 class QtROSSpinner : public QThread {
     void run()
     {
