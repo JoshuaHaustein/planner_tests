@@ -85,7 +85,7 @@ bool loadPlanningProblem(const std::string& filename, mps::planner::sorting::Pla
     return false;
 }
 
-void set_colors(sim_env::Box2DWorldViewerPtr viewer, sim_env::Box2DWorldViewer::ImageRendererPtr renderer,
+void setColors(sim_env::Box2DWorldViewerPtr viewer, sim_env::Box2DWorldViewer::ImageRendererPtr renderer,
     const mps::planner::sorting::PlanningProblem& problem)
 {
     auto logger = problem.world->getLogger();
@@ -111,7 +111,7 @@ void set_colors(sim_env::Box2DWorldViewerPtr viewer, sim_env::Box2DWorldViewer::
     }
 }
 
-int main(int argc, const char* const* argv)
+int main(int argc, char** argv)
 {
     const std::string log_prefix("[AlphaSort]");
     // declare program options
@@ -174,24 +174,36 @@ int main(int argc, const char* const* argv)
         // To evaluate the planner you will want to execute the algorithm without a GUI.
         // This would be done here. Running the planner with the GUI slows things down, so
         // you don't want to do this when you are evaluating the runtime of your algorithm.
-        logger->logInfo("You started AlphaSort without a GUI. Nothing to do here, yet", log_prefix);
+        logger->logInfo("You started AlphaSort without a GUI. Trying image rendering", log_prefix);
         // Thread safe method for rendering images
-        auto renderer = world_viewer->createImageRenderer();
-        set_colors(nullptr, renderer, planning_problem); // set the colors of objects
-        renderer->setVisible("robot", false);
-        renderer->renderImage("/tmp/no_viewer_image.png", 500, 200);
-        std::vector<sim_env::ObjectPtr> objects;
-        planning_problem.world->getObjects(objects);
-        Eigen::VectorXf pos = objects[0]->getDOFPositions();
-        pos[0] += 0.0;
-        pos[1] += 0.0;
-        pos[2] += 0.9;
-        objects[0]->setDOFPositions(pos);
-        renderer->setVisible("robot", true);
-        renderer->renderImage("/tmp/no_viewer_image2.png", 500, 200);
+        struct ImageRendererWorker {
+            sim_env::WorldViewer::ImageRendererPtr renderer;
+            mps::planner::sorting::PlanningProblem planning_problem;
+            std::thread thread;
+            void run()
+            {
+                setColors(nullptr, renderer, planning_problem); // set the colors of objects
+                renderer->setVisible("robot", false);
+                renderer->renderImage("/tmp/no_viewer_image.png", 500, 200);
+                std::vector<sim_env::ObjectPtr> objects;
+                planning_problem.world->getObjects(objects);
+                Eigen::VectorXf pos = objects[0]->getDOFPositions();
+                pos[0] += 0.0;
+                pos[1] += 0.0;
+                pos[2] += 0.9;
+                objects[0]->setDOFPositions(pos);
+                renderer->setVisible("robot", true);
+                renderer->renderImage("/tmp/no_viewer_image2.png", 500, 200);
+            }
+        };
+        ImageRendererWorker worker;
+        worker.planning_problem = planning_problem;
+        worker.renderer = world_viewer->createImageRenderer();
+        worker.thread = std::thread(&ImageRendererWorker::run, std::ref(worker));
+        worker.thread.join();
         return 0;
     } else { // we want to show a GUI
-        set_colors(world_viewer, nullptr, planning_problem); // set the colors of objects
+        setColors(world_viewer, nullptr, planning_problem); // set the colors of objects
         // let's get the WorldViewer that comes with Box2DSimEnv
         // the viewer is the window that launches when you execute this executable
         // for it to show up we need to call its show function
