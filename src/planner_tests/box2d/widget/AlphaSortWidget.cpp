@@ -62,7 +62,7 @@ void AlphaSortWidget::button_clicked(bool enabled)
             world->getLogger()->logInfo("Button released");
         }
     } else if (button_sender == _render_button) {
-        // render the current image
+        // render the current image (we are in the GUI thread, so it's safe to use the viewer)
         auto viewer = _weak_viewer.lock();
         std::string fname("/tmp/test_image.png");
         viewer->centerCamera(true);
