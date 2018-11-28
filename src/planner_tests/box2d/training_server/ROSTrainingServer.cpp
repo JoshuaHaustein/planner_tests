@@ -75,8 +75,7 @@ bool ROSTrainingServer::get_action_space_info(planner_tests::GetActionSpaceInfo:
     const static std::string log_prefix("ROSTrainingServer::get_action_space_info");
     _logger->logDebug("Retrieving action space information", log_prefix);
     // TODO this is specific to RampVelocityControl
-    // TODO also need to update RampVelocityControl to be parameterized differently
-    // TODO it makes most sense to parameterize it as (tvel(m/s), rot_vel(rot/s), duration(s), direction (angle))
+    // local ramp twist is (tvel(m/s), rot_vel(rot/s), duration(s), direction (angle))
     res.dof_action_space = 4;
     res.lower_bounds.push_back(0.0);
     res.lower_bounds.push_back(-_planning_problem.control_limits.velocity_limits[2]);
@@ -134,6 +133,9 @@ bool ROSTrainingServer::propagate(planner_tests::Propagate::Request& req, planne
         Eigen::Vector3f robot_pose;
         _box2d_robot->getPose(robot_pose);
         Eigen::Vector4f ltwist(req.action_params[0], req.action_params[1], req.action_params[2], req.action_params[3]);
+        _logger->logDebug(boost::format("Propagating local twist of %fm/s, %frad/s for duration of %fs in direction %f")
+                % ltwist[0] % ltwist[1] % ltwist[2] % ltwist[3],
+            log_prefix);
         _control->setFromLocalTwist(robot_pose, ltwist);
     } else {
         _logger->logErr("Invalid propgation request. Invalid number of action params", log_prefix);
