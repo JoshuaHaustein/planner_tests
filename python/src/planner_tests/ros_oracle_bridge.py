@@ -164,8 +164,8 @@ class ROSOracleBridge(object):
         if not response.service_success:
             raise RuntimeError("Could not set activity for objects " + str(active_mapping.keys()))
         old_active_objects = set(self._active_objects)
-        deactivated_objects = set([obj_name for (obj_name, b_active) in active_mapping.iteritems() if not b_active])
-        activated_objects = set([obj_name for (obj_name, b_active) in active_mapping.iteritems()
+        deactivated_objects = set([obj_name for (obj_name, b_active) in active_mapping.items() if not b_active])
+        activated_objects = set([obj_name for (obj_name, b_active) in active_mapping.items()
                                  if b_active and obj_name != self._robot_name])
         self._active_objects = old_active_objects - deactivated_objects | activated_objects
 
