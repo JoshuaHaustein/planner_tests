@@ -7,6 +7,7 @@
 
 #include "ros/ros.h"
 #include <planner_tests/GetActionSpaceInfo.h>
+#include <planner_tests/GetCollisions.h>
 #include <planner_tests/GetObjectProperties.h>
 #include <planner_tests/GetState.h>
 #include <planner_tests/Propagate.h>
@@ -37,6 +38,8 @@ namespace box2d {
             bool get_state(planner_tests::GetState::Request& req,
                 planner_tests::GetState::Response& res);
 
+            bool get_collisions(planner_tests::GetCollisions::Request& req, planner_tests::GetCollisions::Response& res);
+
             bool propagate(planner_tests::Propagate::Request& req, planner_tests::Propagate::Response& res);
 
             bool set_active_objects(planner_tests::SetActiveObjects::Request& req,
@@ -58,6 +61,7 @@ namespace box2d {
             ros::ServiceServer _get_properties_service;
             ros::ServiceServer _get_action_space_info_service;
             ros::ServiceServer _get_state_service;
+            ros::ServiceServer _get_collisions_service;
             ros::ServiceServer _propagate_service;
             ros::ServiceServer _set_active_objects_service;
             ros::ServiceServer _set_state_service;

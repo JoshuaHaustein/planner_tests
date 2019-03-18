@@ -7,7 +7,7 @@ d = generate_distutils_setup(
     packages=['planner_tests'],
     scripts=[],
     package_dir={'': 'python/src'},
-    requores=['rospy', 'numpy', 'geometry_msgs', 'itertools']
+    requires=['rospy', 'numpy', 'geometry_msgs', 'itertools']
 )
 
 setup(**d)

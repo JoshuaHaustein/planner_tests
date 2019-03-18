@@ -28,23 +28,27 @@ class ROSOracleBridge(object):
         prop_name = '/' + server_name + '/propagate'
         sao_name = '/' + server_name + '/set_active_objects'
         ss_name = '/' + server_name + '/set_state'
+        gc_name = '/' + server_name + '/get_collisions'
         rospy.wait_for_service(gasi_name)
         rospy.wait_for_service(gop_name)
         rospy.wait_for_service(gs_name)
         rospy.wait_for_service(prop_name)
         rospy.wait_for_service(sao_name)
         rospy.wait_for_service(ss_name)
+        rospy.wait_for_service(gc_name)
         self._get_action_space_info_service = rospy.ServiceProxy(gasi_name, GetActionSpaceInfo)
         self._get_object_properties_service = rospy.ServiceProxy(gop_name, GetObjectProperties)
         self._get_state_service = rospy.ServiceProxy(gs_name, GetState)
         self._propagate_service = rospy.ServiceProxy(prop_name, Propagate)
         self._set_active_objects_service = rospy.ServiceProxy(sao_name, SetActiveObjects)
         self._set_state_service = rospy.ServiceProxy(ss_name, SetState)
+        self._get_collisions_service = rospy.ServiceProxy(gc_name, GetCollisions)
         resp = self.get_object_properties()
         self._object_names = resp.obj_names
         self._robot_name = 'robot'
         self._all_entities_names = [self._robot_name]
         self._all_entities_names.extend(self._object_names)
+        self._name_to_idx = {name: idx for idx, name in enumerate(self._all_entities_names)}
         self._active_objects = set(self._object_names)
         rospy.loginfo("Ready")
 
@@ -101,6 +105,7 @@ class ROSOracleBridge(object):
         if b_active_only:
             request.obj_names = [self._robot_name]
             request.obj_names.extend(self._active_objects)
+            request.obj_names.sort(key=self._name_to_idx.get)
         else:
             request.obj_names = self._all_entities_names
         for obj_state in state:
@@ -132,9 +137,26 @@ class ROSOracleBridge(object):
         if b_active_only:
             object_names = [self._robot_name]
             object_names.extend(self._active_objects)
+            object_names.sort(key=self._name_to_idx.get)
         else:
             object_names = self._all_entities_names
         return numpy.array([name_state_map[name] for name in object_names])
+
+    def get_collisions(self, obj_name):
+        """
+            Return names of all objects the given object collides with in the current state.
+            ---------
+            Arguments
+            ---------
+            obj_name, string - name of the object to check for collision
+            -------
+            Returns
+            -------
+            list of string - names of objects the specified object collides with.
+        """
+        col_req = GetCollisionsRequest(obj_name)
+        col_response = self._get_collisions_service(col_req)
+        return col_response.collidors
 
     def set_active(self, obj_name):
         """

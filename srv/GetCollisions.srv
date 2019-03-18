@@ -1,0 +1,6 @@
+# request
+string obj_name  # object to check collisions for
+---
+# response
+string[] collidors  # list of colliding object names
+bool service_success  # true if the service request was valid

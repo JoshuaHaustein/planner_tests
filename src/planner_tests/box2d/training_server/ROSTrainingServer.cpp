@@ -14,6 +14,7 @@ ROSTrainingServer::ROSTrainingServer(mps::planner::pushing::PlanningProblem& pla
     _get_properties_service = _nhandle.advertiseService("get_object_properties", &ROSTrainingServer::get_object_properties, this);
     _get_action_space_info_service = _nhandle.advertiseService("get_action_space_info", &ROSTrainingServer::get_action_space_info, this);
     _get_state_service = _nhandle.advertiseService("get_state", &ROSTrainingServer::get_state, this);
+    _get_collisions_service = _nhandle.advertiseService("get_collisions", &ROSTrainingServer::get_collisions, this);
     _propagate_service = _nhandle.advertiseService("propagate", &ROSTrainingServer::propagate, this);
     _set_active_objects_service = _nhandle.advertiseService("set_active_objects", &ROSTrainingServer::set_active_objects, this);
     _set_state_service = _nhandle.advertiseService("set_state", &ROSTrainingServer::set_state, this);
@@ -120,6 +121,20 @@ bool ROSTrainingServer::get_state(planner_tests::GetState::Request& req,
         pose_msg.theta = pose[2];
         res.states.push_back(pose_msg);
     }
+    return true;
+}
+
+bool ROSTrainingServer::get_collisions(planner_tests::GetCollisions::Request& req, planner_tests::GetCollisions::Response& res)
+{
+    const static std::string log_prefix("ROSTrainingServer::get_collisions");
+    _logger->logDebug("Checking collisions", log_prefix);
+    auto req_obj = _box2d_world->getObject(req.obj_name, false);
+    std::vector<sim_env::ObjectPtr> collidors;
+    _box2d_world->checkCollision(req_obj, collidors);
+    for (auto& col : collidors) {
+        res.collidors.push_back(col->getName());
+    }
+    res.service_success = true;
     return true;
 }
 

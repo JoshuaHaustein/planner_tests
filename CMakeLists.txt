@@ -38,6 +38,7 @@ add_service_files(
         Propagate.srv
         SetActiveObjects.srv
         SetState.srv
+        GetCollisions.srv
 )
 
 generate_messages (
