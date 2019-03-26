@@ -427,7 +427,7 @@ void PlannerSetupWidget::buildUI()
     _algorithm_selector->addItem("OracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::OracleRRT);
     _algorithm_selector->addItem("SliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::SliceOracleRRT);
     _algorithm_selector->addItem("HybridActionRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::HybridActionRRT);
-    // _algorithm_selector->addItem("GNATSamplingSliceOracleRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::GNATSamplingSliceOracleRRT);
+    _algorithm_selector->addItem("GreedyMultiExtendRRT", mps::planner::pushing::PlanningProblem::AlgorithmType::GreedyMultiExtendRRT);
     layout->addWidget(_algorithm_selector, row, col + 1);
     _oracle_selector = new QComboBox();
     _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);

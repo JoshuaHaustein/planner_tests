@@ -7,7 +7,7 @@
 
 #include <QtGui/QTableView>
 #include <QtGui/QWidget>
-#include <mps/planner/pushing/algorithm/RRT.h>
+#include <mps/planner/pushing/algorithm/RearrangementPlanner.h>
 #include <sim_env/Box2DWorld.h>
 
 namespace planner_tests {
