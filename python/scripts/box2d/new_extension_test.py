@@ -279,6 +279,7 @@ class ExtensionTest(object):
             remainers, set of int - reamining movables that may be moved (i.e. are not at their goals)
         """
         path = []  # stores tuples (state, action_leading_to_state)
+        backtracking_path = []
         push_result = None
         b_new_push = True
         pushable_movables = targets | remainers
@@ -294,8 +295,9 @@ class ExtensionTest(object):
             # return ExtensionTest.ExtensionProgress.FAIL, None, None
             elif push_result == ExtensionTest.PushResult.MOVABLES_BLOCK_PUSH:
                 sub_result = ExtensionTest.ExtensionProgress.FAIL
-                while path and sub_result != ExtensionTest.ExtensionProgress.REACHED:
-                    (x_c, u) = path.pop()
+                while backtracking_path and sub_result != ExtensionTest.ExtensionProgress.REACHED:
+                    (x_c, u) = backtracking_path.pop()
+                    path.pop()
                     # run over all blocking movables, and try to clear
                     for m in m_b:
                         m_set = set([m])
@@ -306,6 +308,7 @@ class ExtensionTest(object):
                             remainers = remainers & remainers_prime
                             x_c = x_prime
                             path.extend(sub_path)
+                            backtracking_path = []
                             targets = targets & remainers_prime
                             b_new_push = True
                             break
@@ -316,6 +319,7 @@ class ExtensionTest(object):
                 or push_result == ExtensionTest.PushResult.REACHED
             ):
                 path.append((x_prime, u))
+                backtracking_path.append((x_prime, u))
                 x_c = np.array(x_prime)
             else:
                 raise ValueError("Unknown PushResult encountered")

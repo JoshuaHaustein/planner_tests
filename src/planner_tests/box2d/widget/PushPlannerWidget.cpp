@@ -236,6 +236,8 @@ void PlannerSetupWidget::button_clicked(bool enabled)
             _parent_widget->startPlanner();
         } else if (button_sender == _play_back_button) {
             _parent_widget->startPlayback();
+        } else if (button_sender == _execute_button) {
+            _parent_widget->startExecution();
         } else {
             world->getLogger()->logErr("Click event received from an unknown button", log_prefix);
         }
@@ -432,6 +434,7 @@ void PlannerSetupWidget::buildUI()
     _oracle_selector = new QComboBox();
     _oracle_selector->addItem("Human", mps::planner::pushing::PlanningProblem::OracleType::Human);
     _oracle_selector->addItem("Learned", mps::planner::pushing::PlanningProblem::OracleType::Learned);
+    _oracle_selector->addItem("QuasiStaticSE2", mps::planner::pushing::PlanningProblem::OracleType::QuasiStaticSE2Oracle);
     layout->addWidget(_oracle_selector, row, col + 2);
     ++row;
     ///////////////////////////// Columns (5, 6 and 7) //////////////////////
@@ -495,22 +498,29 @@ void PlannerSetupWidget::buildUI()
     layout->addWidget(_play_back_button, bottom_row, 1);
     QObject::connect(_play_back_button, SIGNAL(clicked(bool)),
         this, SLOT(button_clicked(bool)));
+    // play back button
+    _execute_button = new QPushButton();
+    _execute_button->setText("Execute last solution");
+    _execute_button->setCheckable(true);
+    layout->addWidget(_execute_button, bottom_row, 2);
+    QObject::connect(_execute_button, SIGNAL(clicked(bool)),
+        this, SLOT(button_clicked(bool)));
     // show sdf button
     _show_sdf_button = new QPushButton();
     _show_sdf_button->setText("Show/Update SDF");
-    layout->addWidget(_show_sdf_button, bottom_row, 2);
+    layout->addWidget(_show_sdf_button, bottom_row, 3);
     QObject::connect(_show_sdf_button, SIGNAL(clicked(bool)),
         this, SLOT(button_clicked(bool)));
     // save solution button
     _save_solution_button = new QPushButton();
     _save_solution_button->setText("Save last solution");
-    layout->addWidget(_save_solution_button, bottom_row, 3);
+    layout->addWidget(_save_solution_button, bottom_row, 4);
     QObject::connect(_save_solution_button, SIGNAL(clicked(bool)),
         this, SLOT(button_clicked(bool)));
     // load solution button
     _load_solution_button = new QPushButton();
     _load_solution_button->setText("Load solution");
-    layout->addWidget(_load_solution_button, bottom_row, 4);
+    layout->addWidget(_load_solution_button, bottom_row, 5);
     QObject::connect(_load_solution_button, SIGNAL(clicked(bool)),
         this, SLOT(button_clicked(bool)));
     // finally set the layout
@@ -754,6 +764,20 @@ void PushPlannerWidget::PlannerThread::playback()
     }
 }
 
+void PushPlannerWidget::PlannerThread::execute()
+{
+    if (solution.solved) {
+        bool success = planner.execute(solution, exec_callback,
+            std::bind(&PushPlannerWidget::PlannerThread::isInterrupted, this));
+        auto logger = sim_env::DefaultLogger::getInstance();
+        if (success) {
+            logger->logInfo("Execution successful", "");
+        } else {
+            logger->logInfo("Execution failed");
+        }
+    }
+}
+
 bool PushPlannerWidget::PlannerThread::isInterrupted()
 {
     return interrrupt;
@@ -764,6 +788,7 @@ void PushPlannerWidget::PlannerThread::testOracle()
     // TODO depending on oracle_approach either only call for an approach action, or for pushing policy
     solution.path = planner.testOracle(oracle_goal, oracle_approach);
     solution.solved = true;
+    playback_synch = false;
     playback();
 }
 
@@ -898,6 +923,20 @@ void PushPlannerWidget::startPlayback()
         _planner_thread.thread = std::thread(&PlannerThread::playback, std::ref(_planner_thread));
     } else {
         world->getLogger()->logWarn("Could not start playback because the planner thread is still running.", log_prefix);
+        world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
+    }
+}
+
+void PushPlannerWidget::startExecution()
+{
+    static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::startExecution]");
+    auto world = lockWorld();
+    if (not _planner_thread.thread.joinable()) {
+        world->getLogger()->logInfo("Starting execution", log_prefix);
+        _planner_thread.interrrupt = false;
+        _planner_thread.thread = std::thread(&PlannerThread::execute, std::ref(_planner_thread));
+    } else {
+        world->getLogger()->logWarn("Could not start execution because the planner thread is still running.", log_prefix);
         world->getLogger()->logWarn("You need to stop it manually!", log_prefix);
     }
 }
