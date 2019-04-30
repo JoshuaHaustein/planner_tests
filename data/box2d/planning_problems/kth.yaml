@@ -26,11 +26,11 @@ goals:
     radius: 0.15
     position: [1.0, 0.3, 0.0]
 t_max: 8.0
-oracle_type: Learned
-algorithm_type: SliceOracleRRT
+oracle_type: QuasiStaticSE2
+algorithm_type: GreedyMultiExtendRRT
 num_control_samples: 2
 goal_bias: 0.1
 target_bias: 0.1
 robot_bias: 0.1
-shortcut_type: NaiveShortcut
+shortcut_type: NoShortcut
 shortcut_timeout: 20
