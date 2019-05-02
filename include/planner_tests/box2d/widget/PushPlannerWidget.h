@@ -53,6 +53,7 @@ namespace box2d {
             QLineEdit* _x_target;
             QLineEdit* _y_target;
             QLineEdit* _theta_target;
+            QCheckBox* _teleport_check_box;
 
             std::stack<sim_env::WorldState> _last_world_states;
         };
@@ -80,7 +81,6 @@ namespace box2d {
             QComboBox* _robot_selector;
             // QComboBox* _target_selector;
             QLineEdit* _time_out_edit;
-            QCheckBox* _semi_dynamic_check_box;
             QCheckBox* _debug_check_box;
             QCheckBox* _synch_playback_box;
             QLineEdit* _t_max_edit;
@@ -146,7 +146,7 @@ namespace box2d {
             void startExecution();
             void saveSolution(const std::string& filename);
             void loadSolution(const std::string& filename);
-            void startOracle(const std::string& target, float x, float y, float theta, bool b_approach);
+            void startOracle(const std::string& target, float x, float y, float theta, bool b_approach, bool teleport);
             void resetOracle(sim_env::WorldState& previous_state);
             void stopPlannerThread();
             sim_env::Box2DRobotVelocityControllerPtr setupRobotController(sim_env::Box2DRobotPtr robot);
@@ -158,6 +158,7 @@ namespace box2d {
                 mps::planner::ompl::state::goal::RelocationGoalSpecification oracle_goal;
                 mps::planner::pushing::ExecutionCallback exec_callback;
                 bool oracle_approach;
+                bool approach_teleport;
                 bool isInterrupted();
                 std::thread thread;
                 bool interrrupt;

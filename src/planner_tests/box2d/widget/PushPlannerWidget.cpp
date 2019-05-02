@@ -38,7 +38,8 @@ void OracleTestWidget::button_clicked()
             readValue(_x_target, 0.0f),
             readValue(_y_target, 0.0f),
             readValue(_theta_target, 0.0f),
-            button_sender == _move_pushing_state_button);
+            button_sender == _move_pushing_state_button,
+            _teleport_check_box->isChecked());
     } else if (button_sender == _reset_button) {
         if (!_last_world_states.empty()) {
             _parent_widget->resetOracle(_last_world_states.top());
@@ -83,6 +84,12 @@ void OracleTestWidget::buildUI()
     layout->addWidget(_theta_target, row, col + 1);
     ++row;
     col = 0;
+    // Add teleport check box
+    _teleport_check_box = new QCheckBox();
+    _teleport_check_box->setText("Teleport transit");
+    _teleport_check_box->setChecked(true);
+    layout->addWidget(_teleport_check_box, row, col);
+    ++row;
     ////////////////////////////////////////////////////////////
     ////////////////////// Bottom button ///////////////////////
     // move to pushing state button
@@ -785,8 +792,7 @@ bool PushPlannerWidget::PlannerThread::isInterrupted()
 
 void PushPlannerWidget::PlannerThread::testOracle()
 {
-    // TODO depending on oracle_approach either only call for an approach action, or for pushing policy
-    solution.path = planner.testOracle(oracle_goal, oracle_approach);
+    solution.path = planner.testOracle(oracle_goal, oracle_approach, approach_teleport);
     solution.solved = true;
     playback_synch = false;
     playback();
@@ -965,7 +971,7 @@ void PushPlannerWidget::loadSolution(const std::string& filename)
     _planner_thread.planner.loadSolution(_planner_thread.solution, filename);
 }
 
-void PushPlannerWidget::startOracle(const std::string& target, float x, float y, float theta, bool b_approach)
+void PushPlannerWidget::startOracle(const std::string& target, float x, float y, float theta, bool b_approach, bool b_teleport)
 {
     static std::string log_prefix("[planner_tests::box2d::widget::PushPlannerWidget::startOracle]");
     auto world = lockWorld();
@@ -974,8 +980,11 @@ void PushPlannerWidget::startOracle(const std::string& target, float x, float y,
     if (not _planner_thread.thread.joinable()) {
         world->getLogger()->logInfo("Starting oracle", log_prefix);
         mps::planner::util::logging::setLogger(world->getLogger());
-        auto planning_problem = _planner_tab->getPlanningProblem();
-        _planner_thread.planner.setup(planning_problem);
+        // TODO setup planner when planning problem has changed
+        if (!_planner_thread.planner.isSetup()) {
+            auto planning_problem = _planner_tab->getPlanningProblem();
+            _planner_thread.planner.setup(planning_problem);
+        }
         // _planner_thread.planner.setSliceDrawer(_slice_drawer);
         _planner_thread.oracle_goal.goal_position[0] = x;
         _planner_thread.oracle_goal.goal_position[1] = y;
@@ -983,6 +992,7 @@ void PushPlannerWidget::startOracle(const std::string& target, float x, float y,
         _planner_thread.oracle_goal.object_name = target;
         _planner_thread.interrrupt = false;
         _planner_thread.oracle_approach = b_approach;
+        _planner_thread.approach_teleport = b_teleport;
         _planner_thread.thread = std::thread(&PlannerThread::testOracle, std::ref(_planner_thread));
     } else {
         world->getLogger()->logWarn("Could not start oracle because the planner thread is still running.", log_prefix);
