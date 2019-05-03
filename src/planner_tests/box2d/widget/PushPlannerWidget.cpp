@@ -759,6 +759,11 @@ void PlannerSetupWidget::removeGoal()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////// PushPlannerWidget //////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void PushPlannerWidget::PlannerThread::setup(mps::planner::pushing::PlanningProblem pp)
+{
+    planner.setup(pp);
+}
+
 void PushPlannerWidget::PlannerThread::plan()
 {
     planner.solve(solution);
@@ -984,6 +989,8 @@ void PushPlannerWidget::startOracle(const std::string& target, float x, float y,
         if (!_planner_thread.planner.isSetup()) {
             auto planning_problem = _planner_tab->getPlanningProblem();
             _planner_thread.planner.setup(planning_problem);
+            // for debug, run setup in separate thread so we can visualize states
+            // _planner_thread.thread = std::thread(&PlannerThread::setup, std::ref(_planner_thread), planning_problem);
         }
         // _planner_thread.planner.setSliceDrawer(_slice_drawer);
         _planner_thread.oracle_goal.goal_position[0] = x;

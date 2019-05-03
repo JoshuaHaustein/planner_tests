@@ -163,6 +163,7 @@ namespace box2d {
                 std::thread thread;
                 bool interrrupt;
                 bool playback_synch;
+                void setup(mps::planner::pushing::PlanningProblem pp);
                 void plan();
                 void testOracle();
                 void playback();
