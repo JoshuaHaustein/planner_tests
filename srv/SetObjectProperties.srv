@@ -1,0 +1,12 @@
+# request
+# obj_names determines what objects to set properties for.
+# Other fields must either have the same number of elements, or zero elements (= keep previous value)
+# If any value is negative, the value is ignored.
+string[] obj_names  # names of objects
+float32[] masses  # masses of objects
+float32[] ground_friction_coeffs  # friction coefficients for obj-to-ground contact
+float32[] ground_friction_torque_integrals  #  integral over pressure distribution on support surface
+float32[] contact_friction_coeffs  # friction coeefficients for obj-to-obj contact
+---
+# response
+bool success  # true if values for all objects could be set

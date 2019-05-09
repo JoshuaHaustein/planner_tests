@@ -4,6 +4,8 @@
 string[] obj_names  # names of objects
 float32[] masses  # masses of objects
 float32[] inertias # inertia values for objects
-float32[] friction_coeffs  # friction coefficients
+float32[] ground_friction_coeffs  # friction coefficients for obj-to-ground contact
+float32[] ground_friction_torque_integrals # integral over pressure distribution on support surface
+float32[] contact_friction_coeffs  # friction coefficients for obj-to-obj contact
 float32[] widths  # widths of local AABBs
 float32[] heights  # heights of local AABBs

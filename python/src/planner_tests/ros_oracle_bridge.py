@@ -10,7 +10,6 @@ class ROSOracleBridge(object):
     """
         Python interface using ROS services to interact with the OracleTrainingServer.
     """
-
     def __init__(self, node_name='ros_oracle_client', server_name='oracle_training_server'):
         """
             Create a new ROSOracleBridge.
@@ -24,6 +23,7 @@ class ROSOracleBridge(object):
         rospy.loginfo("Waiting for services...")
         gasi_name = '/' + server_name + '/get_action_space_info'
         gop_name = '/' + server_name + '/get_object_properties'
+        sop_name = '/' + server_name + '/set_object_properties'
         gs_name = '/' + server_name + '/get_state'
         prop_name = '/' + server_name + '/propagate'
         sao_name = '/' + server_name + '/set_active_objects'
@@ -36,6 +36,7 @@ class ROSOracleBridge(object):
         rospy.wait_for_service(ss_name)
         self._get_action_space_info_service = rospy.ServiceProxy(gasi_name, GetActionSpaceInfo)
         self._get_object_properties_service = rospy.ServiceProxy(gop_name, GetObjectProperties)
+        self._set_object_properties_service = rospy.ServiceProxy(sop_name, SetObjectProperties)
         self._get_state_service = rospy.ServiceProxy(gs_name, GetState)
         self._propagate_service = rospy.ServiceProxy(prop_name, Propagate)
         self._set_active_objects_service = rospy.ServiceProxy(sao_name, SetActiveObjects)
@@ -76,12 +77,51 @@ class ROSOracleBridge(object):
             obj_names, array of string
             masses, array of floats
             inertias, array of floats
-            friction_coeffs, array of floats
+            ground_friction_coeffs, array of floats
+            ground_friction_torque_integrals, array of floats
+            contact_friction_coeffs, array of floats
             widths, array of floats
             heights, array of floats
         """
         response = self._get_object_properties_service()
         return response
+
+    def set_object_properties(self, properties):
+        """
+            Set the given object properties.
+            ---------
+            Arguments
+            ---------
+            properties, dict: string -> dict - mapping from object name to a dictionary containing
+                object properties for this object. Supported object properties are: 
+                mass, ground_friction_coeff, ground_friction_torque_integral, contact_friction_coeff
+
+            -------
+            Returns
+            -------
+            success, bool
+        """
+        req = SetObjectPropertiesRequest()
+        for name, prop in properties.iteritems():
+            req.obj_names.append(name)
+            if 'mass' in prop:
+                req.masses.append(prop['mass'])
+            else:
+                req.masses.append(-1.0)
+            if 'ground_friction_coeff' in prop:
+                req.ground_friction_coeffs.append(prop['ground_friction_coeff'])
+            else:
+                req.ground_friction_coeffs.append(-1.0)
+            if 'ground_friction_torque_integral' in prop:
+                req.ground_friction_torque_integrals.append(prop['ground_friction_torque_integral'])
+            else:
+                req.ground_friction_torque_integrals.append(-1.0)
+            if 'contact_friction_coeff' in prop:
+                req.contact_friction_coeffs.append(prop['contact_friction_coeff'])
+            else:
+                req.contact_friction_coeffs.append(-1.0)
+        res = self._set_object_properties_service(req)
+        return res.success
 
     def set_state(self, state, b_active_only=True):
         """

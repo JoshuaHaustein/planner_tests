@@ -1,0 +1,20 @@
+name: yumi_pusher
+base_actuation:
+  translational_velocity_limits: [-0.04, 0.04]
+  translational_acceleration_limits: [-0.1, 0.1]
+  rotational_velocity_limits: [-0.5, 0.5]
+  rotational_acceleration_limits: [-0.8, 0.8]
+  use_center_of_mass: true
+links:
+  - name: base
+    geometry:
+      - [-0.005, -0.0025, -0.005, -0.0525, 0.005, -0.0525, 0.005, -0.0025]
+      - [0.005, -0.0025, 0.0483, 0.0225, 0.0433, 0.0312, 0, 0.0062]
+      - [-0.005, -0.0025, -0.0483, 0.0225, -0.0433, 0.0312, 0.0, 0.0062]
+      - [-0.005, -0.0025, 0.005, -0.0025, 0.0, 0.0062]
+    mass: 10.8
+    ground_friction: 0.0
+    ground_torque_integral: 0.0
+    restitution: 1.0
+    contact_friction: 0.1
+joints:

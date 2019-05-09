@@ -11,6 +11,7 @@
 #include <planner_tests/GetState.h>
 #include <planner_tests/Propagate.h>
 #include <planner_tests/SetActiveObjects.h>
+#include <planner_tests/SetObjectProperties.h>
 #include <planner_tests/SetState.h>
 #include <sim_env/Box2DController.h>
 #include <sim_env/Box2DWorld.h>
@@ -30,6 +31,9 @@ namespace box2d {
 
             bool get_object_properties(planner_tests::GetObjectProperties::Request& req,
                 planner_tests::GetObjectProperties::Response& res);
+
+            bool set_object_properties(planner_tests::SetObjectProperties::Request& req,
+                planner_tests::SetObjectProperties::Response& res);
 
             bool get_action_space_info(planner_tests::GetActionSpaceInfo::Request& req,
                 planner_tests::GetActionSpaceInfo::Response& res);
@@ -56,6 +60,7 @@ namespace box2d {
             mps::planner::ompl::state::SimEnvWorldState* _resulting_state;
 
             ros::ServiceServer _get_properties_service;
+            ros::ServiceServer _set_properties_service;
             ros::ServiceServer _get_action_space_info_service;
             ros::ServiceServer _get_state_service;
             ros::ServiceServer _propagate_service;

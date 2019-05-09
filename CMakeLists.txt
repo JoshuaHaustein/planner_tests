@@ -34,6 +34,7 @@ add_service_files(
         FILES 
         GetActionSpaceInfo.srv
         GetObjectProperties.srv
+        SetObjectProperties.srv
         GetState.srv
         Propagate.srv
         SetActiveObjects.srv

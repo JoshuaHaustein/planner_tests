@@ -117,6 +117,7 @@ int main(int argc, char** argv)
         QtROSSpinner ros_spinner; // run a separate thread to update ROS stuff
         ros_spinner.start();
         return_val = world_viewer->run();
+        ros::shutdown();
         ros_spinner.exit();
     }
     return return_val;

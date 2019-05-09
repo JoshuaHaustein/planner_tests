@@ -1,0 +1,11 @@
+name: ycb_cube
+links:
+  - name: cube
+    geometry:
+      - [0.0, 0.0, 0.025, 0.0, 0.025, 0.025, 0.0, 0.025]
+    mass: 0.1
+    ground_friction: 0.1
+    ground_torque_integral: 0.001
+    contact_friction: 1.5
+    restitution: 1.0
+joints:

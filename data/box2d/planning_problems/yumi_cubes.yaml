@@ -1,0 +1,30 @@
+world_file: ../worlds/yumi_cubes.yaml
+robot_name: robot
+x_limits: [-0.4, -0.1]
+y_limits: [-0.15, 0.35]
+z_limits: [0.0, 0.0]
+max_velocity: 0.1
+max_rotation_vel: 1.0
+planning_timeout: 60.0
+control_limits:
+  velocity_limits: [0.04, 0.04, 0.5]
+  acceleration_limits: [0.1, 0.1, 0.8]
+  duration_limits: [0.0, 0.6]
+  subspaces:
+    - [0, 1]
+collision_policy:
+  static_collisions_allowed: false
+  static_collisions_blacklist: [robot]
+  collisions_blacklist: []
+goals:
+  - object_name: cube_1
+    radius: 0.14
+    position: [-0.2, 0.0, 0.0]
+t_max: 8.0
+oracle_type: Human
+algorithm_type: SliceOracleRRT
+goal_bias: 0.1
+target_bias: 0.1
+robot_bias: 0.1
+num_control_samples: 2
+

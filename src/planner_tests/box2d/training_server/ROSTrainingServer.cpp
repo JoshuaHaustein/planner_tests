@@ -12,6 +12,7 @@ ROSTrainingServer::ROSTrainingServer(mps::planner::pushing::PlanningProblem& pla
     , _resulting_state(nullptr)
 {
     _get_properties_service = _nhandle.advertiseService("get_object_properties", &ROSTrainingServer::get_object_properties, this);
+    _set_properties_service = _nhandle.advertiseService("set_object_properties", &ROSTrainingServer::set_object_properties, this);
     _get_action_space_info_service = _nhandle.advertiseService("get_action_space_info", &ROSTrainingServer::get_action_space_info, this);
     _get_state_service = _nhandle.advertiseService("get_state", &ROSTrainingServer::get_state, this);
     _propagate_service = _nhandle.advertiseService("propagate", &ROSTrainingServer::propagate, this);
@@ -61,10 +62,54 @@ bool ROSTrainingServer::get_object_properties(planner_tests::GetObjectProperties
         res.obj_names.push_back(object->getName());
         res.masses.push_back(object->getMass());
         res.inertias.push_back(object->getInertia());
-        res.friction_coeffs.push_back(object->getGroundFriction());
+        res.ground_friction_coeffs.push_back(object->getBaseLink()->getGroundFrictionCoefficient());
+        res.ground_friction_torque_integrals.push_back(object->getBaseLink()->getGroundFrictionTorqueIntegral());
+        res.contact_friction_coeffs.push_back(object->getBaseLink()->getContactFriction());
         auto aabb = object->getLocalAABB();
         res.widths.push_back(aabb.getWidth());
         res.heights.push_back(aabb.getHeight());
+    }
+    return true;
+}
+
+bool ROSTrainingServer::set_object_properties(planner_tests::SetObjectProperties::Request& req,
+    planner_tests::SetObjectProperties::Response& res)
+{
+    const static std::string log_prefix("ROSTrainingServer::set_object_properties");
+    std::lock_guard<std::recursive_mutex> lock(_box2d_world->getMutex());
+    _logger->logDebug("Setting object properties", log_prefix);
+    res.success = true;
+    for (size_t idx = 0; idx < req.obj_names.size(); ++idx) {
+        auto object = _box2d_world->getBox2DObject(req.obj_names.at(idx));
+        if (!object) {
+            _logger->logErr("Could not set properties for object " + req.obj_names.at(idx) + ". Object does not exist.", log_prefix);
+            res.success = false;
+            continue;
+        }
+        if (req.masses.size() > idx) {
+            float m = req.masses.at(idx);
+            if (m > 0.0f) {
+                object->getBaseLink()->setMass(m);
+            }
+        }
+        if (req.ground_friction_coeffs.size() > idx) {
+            float mu = req.ground_friction_coeffs.at(idx);
+            if (mu > 0.0f) {
+                object->getBaseLink()->setGroundFrictionCoefficient(mu);
+            }
+        }
+        if (req.ground_friction_torque_integrals.size() > idx) {
+            float fti = req.ground_friction_torque_integrals.at(idx);
+            if (fti > 0.0f) {
+                object->getBaseLink()->setGroundFrictionTorqueIntegral(fti);
+            }
+        }
+        if (req.contact_friction_coeffs.size() > idx) {
+            float cmu = req.contact_friction_coeffs.at(idx);
+            if (cmu > 0.0f) {
+                object->getBaseLink()->setContactFriction(cmu);
+            }
+        }
     }
     return true;
 }
