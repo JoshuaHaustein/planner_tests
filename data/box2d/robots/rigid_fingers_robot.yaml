@@ -15,8 +15,8 @@ links:
       - [0.16, 0.05, 0.2, 0.05, 0.26, 0.11, 0.22, 0.11]
       - [0.22, 0.11, 0.26, 0.11, 0.22, 0.18, 0.19, 0.18]
     mass: 1.8
-    trans_friction: 0.01
-    rot_friction: 0.0001
+    ground_friction: 0.01
+    ground_torque_integral: 0.0001
     restitution: 1.0
     contact_friction: 0.1
     balls:

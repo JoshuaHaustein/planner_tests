@@ -4,13 +4,13 @@
 
 #include <boost/program_options.hpp>
 //#include <sim_env/Box2DWorldViewer.h>
-#include <sim_env/Box2DWorld.h>
-#include <sim_env/Box2DController.h>
+#include <functional>
 #include <mps/planner/pushing/OraclePushPlanner.h>
 #include <mps/planner/util/yaml/OracleParsing.h>
-#include <thread>
+#include <sim_env/Box2DController.h>
+#include <sim_env/Box2DWorld.h>
 #include <string>
-#include <functional>
+#include <thread>
 
 namespace po = boost::program_options;
 
@@ -21,7 +21,8 @@ struct DataGenerator {
     sim_env::Box2DWorldPtr world;
     std::string output_file;
     unsigned int num_samples;
-    void run() {
+    void run()
+    {
         auto robot = world->getBox2DRobot(problem_desc.robot_name);
         auto target_object = world->getBox2DObject(problem_desc.training_object_name);
         std::stringstream header;
@@ -29,16 +30,16 @@ struct DataGenerator {
         header << aabb.getWidth() << ", " << aabb.getHeight()
                << ", " << target_object->getMass()
                << ", " << target_object->getInertia()
-               << ", " << target_object->getGroundFriction()
+               << ", " << target_object->getBaseLink()->getGroundFrictionCoefficient()
                << ", " << target_object->getName();
         auto controller = std::make_shared<sim_env::Box2DRobotVelocityController>(robot);
         using namespace std::placeholders;
         robot->setController(std::bind(&sim_env::Box2DRobotVelocityController::control, controller, _1, _2, _3, _4, _5));
         mps::planner::ompl::state::goal::RelocationGoalSpecification goal_spec(problem_desc.goals.at(0).obj_name,
-                                                                               problem_desc.goals.at(0).goal_position,
-                                                                               Eigen::Quaternionf(),
-                                                                               problem_desc.goals.at(0).goal_region_radius,
-                                                                               0.0f);
+            problem_desc.goals.at(0).goal_position,
+            Eigen::Quaternionf(),
+            problem_desc.goals.at(0).goal_region_radius,
+            0.0f);
         mps::planner::pushing::PlanningProblem problem(world, robot, controller, goal_spec);
         mps::planner::util::yaml::configurePlanningProblem(problem, problem_desc);
         planner.setup(problem);
@@ -48,29 +49,26 @@ struct DataGenerator {
 
 struct RobotFilter {
     std::string name;
-    bool filter(const sim_env::Box2DRobotDescription& robot_desc) {
+    bool filter(const sim_env::Box2DRobotDescription& robot_desc)
+    {
         return robot_desc.object_description.name.compare(name) != 0;
     }
 };
 
 struct ObjectFilter {
     std::string name;
-    bool filter(const sim_env::Box2DObjectDescription& obj_desc) {
+    bool filter(const sim_env::Box2DObjectDescription& obj_desc)
+    {
         return obj_desc.name.compare(name) != 0;
     }
 };
 
-int main(int argc, const char* const* argv) {
+int main(int argc, const char* const* argv)
+{
     // declare program options
     bool verbose = false;
     po::options_description desc("Allowed options");
-    desc.add_options()
-            ("help", "Show help message")
-            ("output_file", po::value<std::string>(), "path to file where to write results to")
-            ("planning_problem", po::value<std::string>(), "yaml file containing a planning problem definition")
-            ("num_samples", po::value<unsigned int>()->default_value(1000), "number of samples")
-            ("verbose", po::bool_switch(&verbose), "Set whether debug outputs should be printed")
-            ("threads", po::value<unsigned int>()->default_value(1), "number of threads");
+    desc.add_options()("help", "Show help message")("output_file", po::value<std::string>(), "path to file where to write results to")("planning_problem", po::value<std::string>(), "yaml file containing a planning problem definition")("num_samples", po::value<unsigned int>()->default_value(1000), "number of samples")("verbose", po::bool_switch(&verbose), "Set whether debug outputs should be printed")("threads", po::value<unsigned int>()->default_value(1), "number of threads");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -103,13 +101,13 @@ int main(int argc, const char* const* argv) {
     RobotFilter robot_filter;
     robot_filter.name = planning_desc.robot_name;
     std::remove_if(env_desc.robots.begin(), env_desc.robots.end(),
-                   std::bind(&RobotFilter::filter, &robot_filter, std::placeholders::_1));
+        std::bind(&RobotFilter::filter, &robot_filter, std::placeholders::_1));
     assert(env_desc.robots.size() == 1);
     // remove objects
     ObjectFilter obj_filter;
     obj_filter.name = planning_desc.training_object_name;
     std::remove_if(env_desc.objects.begin(), env_desc.objects.end(),
-                   std::bind(&ObjectFilter::filter, &obj_filter, std::placeholders::_1));
+        std::bind(&ObjectFilter::filter, &obj_filter, std::placeholders::_1));
     assert(env_desc.objects.size() == 1);
     // create workers
     std::string output_file = vm["output_file"].as<std::string>();
@@ -128,10 +126,10 @@ int main(int argc, const char* const* argv) {
         }
         data_generator.thread = std::thread(std::bind(&DataGenerator::run, std::ref(data_generator)));
     }
-//    auto viewer = data_generators[0].world->getViewer();
-//    auto box2d_viewer = std::dynamic_pointer_cast<sim_env::Box2DWorldViewer>(viewer);
-//    box2d_viewer->show(argc, argv);
-//    int a = box2d_viewer->run();
+    //    auto viewer = data_generators[0].world->getViewer();
+    //    auto box2d_viewer = std::dynamic_pointer_cast<sim_env::Box2DWorldViewer>(viewer);
+    //    box2d_viewer->show(argc, argv);
+    //    int a = box2d_viewer->run();
     for (auto& data_gen : data_generators) {
         data_gen.thread.join();
         std::cout << "Joined a thread" << std::endl;
@@ -139,4 +137,3 @@ int main(int argc, const char* const* argv) {
     std::cout << "All done" << std::endl;
     return 0;
 }
-

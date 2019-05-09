@@ -62,7 +62,7 @@ bool ROSTrainingServer::get_object_properties(planner_tests::GetObjectProperties
         res.obj_names.push_back(object->getName());
         res.masses.push_back(object->getMass());
         res.inertias.push_back(object->getInertia());
-        res.friction_coeffs.push_back(object->getGroundFriction());
+        res.friction_coeffs.push_back(object->getBaseLink()->getGroundFrictionCoefficient());
         auto aabb = object->getLocalAABB();
         res.widths.push_back(aabb.getWidth());
         res.heights.push_back(aabb.getHeight());
