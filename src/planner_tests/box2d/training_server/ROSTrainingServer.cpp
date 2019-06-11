@@ -56,9 +56,9 @@ bool ROSTrainingServer::get_object_properties(planner_tests::GetObjectProperties
     const static std::string log_prefix("ROSTrainingServer::get_object_properties");
     std::lock_guard<std::recursive_mutex> lock(_box2d_world->getMutex());
     _logger->logDebug("Retrieving object properties", log_prefix);
-    std::vector<sim_env::Box2DObjectPtr> box2d_objects;
-    _box2d_world->getBox2DObjects(box2d_objects);
-    for (auto& object : box2d_objects) {
+    std::vector<sim_env::ObjectPtr> objects;
+    _box2d_world->getObjects(objects, false);
+    for (auto& object : objects) {
         res.obj_names.push_back(object->getName());
         res.masses.push_back(object->getMass());
         res.inertias.push_back(object->getInertia());
@@ -80,7 +80,7 @@ bool ROSTrainingServer::set_object_properties(planner_tests::SetObjectProperties
     _logger->logDebug("Setting object properties", log_prefix);
     res.success = true;
     for (size_t idx = 0; idx < req.obj_names.size(); ++idx) {
-        auto object = _box2d_world->getBox2DObject(req.obj_names.at(idx));
+        auto object = _box2d_world->getObject(req.obj_names.at(idx), false);
         if (!object) {
             _logger->logErr("Could not set properties for object " + req.obj_names.at(idx) + ". Object does not exist.", log_prefix);
             res.success = false;

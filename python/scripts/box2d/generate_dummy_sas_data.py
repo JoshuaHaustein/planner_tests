@@ -1,15 +1,26 @@
-import pandas as pd
 import planner_tests.ros_oracle_bridge
 import numpy as np
 import IPython
 
 
-def sample_action(bounds):
+def sample_action(bounds, state):
+    """
+        Sample an action in the direction to the closest object.
+    """
+    robot_state = state[0]
+    delta_pos = state[1:, :2] - robot_state[:2]
+    closest_obj_state = state[np.argmin(np.linalg.norm(delta_pos, axis=1)) + 1]
+    act_dir = closest_obj_state[:2] - robot_state[:2]
+    angle = np.arctan2(act_dir[1], act_dir[0])
+    # compute action
     rnd_action = np.random.random(4)
+    # random velocity magnitudes
     rnd_action[0] = rnd_action[0] * (bounds[1, 0] - bounds[0, 0]) + bounds[0, 0]
     rnd_action[1] = rnd_action[1] * (bounds[1, 1] - bounds[0, 1]) + bounds[0, 1]
     rnd_action[2] = rnd_action[2] * 2.0 + 0.2
-    rnd_action[3] = rnd_action[3] * (bounds[1, 2] - bounds[0, 2]) + bounds[0, 2]
+    # direction towards closest object
+    # rnd_action[3] = rnd_action[3] * (bounds[1, 2] - bounds[0, 2]) + bounds[0, 2]
+    rnd_action[3] = angle - robot_state[2]
     return rnd_action
 
 
@@ -37,13 +48,13 @@ if __name__ == "__main__":
         # repeat if we do not have a valid state
         if not bridge.set_state(random_state):
             continue
-        raw_input("Please place the object somewhere pushable")
+        # raw_input("Please place the object somewhere pushable")
         # else sample some actions in the hope to touch anything
-        for num_action_samples in range(num_action_samples):
+        for _ in range(num_action_samples):
             # rand_action = np.random.random(action_props.dof_action_space)
             # rand_action = rand_action * (action_bounds[1] - action_bounds[0]) + action_bounds[0]
             random_state = bridge.get_state()
-            rand_action = sample_action(action_bounds)
+            rand_action = sample_action(action_bounds, random_state)
             if bridge.propagate(rand_action):
                 # get state
                 result_state = bridge.get_state()
@@ -56,5 +67,5 @@ if __name__ == "__main__":
                     elem[state_a.shape[0]: state_a.shape[0] + action_props.dof_action_space] = rand_action
                     elem[state_a.shape[0] + action_props.dof_action_space:] = state_b
                     sas_samples.append(elem)
-    frame = pd.DataFrame(sas_samples)
-    frame.to_csv('/tmp/dummy_sas_data.csv')
+    frame = np.array(sas_samples)
+    np.save('/tmp/dummy_data', frame)

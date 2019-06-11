@@ -10,6 +10,7 @@ class ROSOracleBridge(object):
     """
         Python interface using ROS services to interact with the OracleTrainingServer.
     """
+
     def __init__(self, node_name='ros_oracle_client', server_name='oracle_training_server'):
         """
             Create a new ROSOracleBridge.
@@ -42,10 +43,9 @@ class ROSOracleBridge(object):
         self._set_active_objects_service = rospy.ServiceProxy(sao_name, SetActiveObjects)
         self._set_state_service = rospy.ServiceProxy(ss_name, SetState)
         resp = self.get_object_properties()
-        self._object_names = resp.obj_names
         self._robot_name = 'robot'
-        self._all_entities_names = [self._robot_name]
-        self._all_entities_names.extend(self._object_names)
+        self._object_names = [name for name in resp.obj_names if name != self._robot_name]
+        self._all_entities_names = resp.obj_names
         self._active_objects = set(self._object_names)
         rospy.loginfo("Ready")
 
