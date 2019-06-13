@@ -47,8 +47,8 @@ class FrictionOptimization(object):
 
     def _get_start_value(self):
         # TODO pick a better one? From initial simulation?
-        # return (0.1, 1.5, 0.1, 0.001)
-        return (0.3, 1.2, 0.2, 0.01)
+        return (0.1, 1.5, 0.1, 0.001)
+        # return (0.3, 1.2, 0.2, 0.01)
 
     def _validate_setup(self):
         # get state from bridge
@@ -90,6 +90,8 @@ class FrictionOptimization(object):
             target_state = obs[self._state_dim + self._action_dim:].reshape(self._state_dim / 3, 3)
             # set simulator to init state
             bvalid = self._bridge.set_state(init_state)
+            print "Showing initial state"
+            raw_input()
             if not bvalid:
                 print "Warning: Encountered invalid initial state in training data"
                 continue
@@ -99,9 +101,17 @@ class FrictionOptimization(object):
             bvalid = self._bridge.propagate(action)
             # TODO what to do about invalid states?
             result_state = self._bridge.get_state()
-            delta_state = result_state[:2] - target_state[:2]
-            error += np.sum(np.linalg.norm(delta_state, axis=1))
-            error += self._so2_error(result_state[:, 2], target_state[:, 2])
+            print "Showing predicted state"
+            raw_input()
+            self._bridge.set_state(target_state)
+            print "Showing real state"
+            raw_input()
+            delta_state = result_state[1:, :2] - target_state[1:, :2]
+            item_error_cart = np.sum(np.linalg.norm(delta_state, axis=1))
+            item_error_rot = self._so2_error(result_state[:, 2], target_state[:, 2])
+            # print item_error_cart, item_error_rot
+            error += item_error_cart
+            error += item_error_rot
         return error / len(data_set)
 
 
@@ -116,5 +126,5 @@ if __name__ == "__main__":
     # TODO could launch ROSOracleServer from here (with the correct world to load)
     # connect ROS bridge
     bridge = planner_tests.ros_oracle_bridge.ROSOracleBridge()
-    problem = FrictionOptimization(observations[:20], bridge)
+    problem = FrictionOptimization(observations, bridge)
     IPython.embed()

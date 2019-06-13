@@ -4,8 +4,8 @@ links:
     geometry:
       - [0.0, 0.0, 0.025, 0.0, 0.025, 0.025, 0.0, 0.025]
     mass: 0.01
-    ground_friction: 0.1
-    ground_torque_integral: 0.001
-    contact_friction: 1.5
+    ground_friction: 0.0149391
+    ground_torque_integral: 0.0003
+    contact_friction: 0.63833324
     restitution: 1.0
 joints:

@@ -6,6 +6,15 @@ objects:
   - name: cube_1
     filename: ../objects/ycb_cube.yaml
     static: False
+  - name: cube_2
+    filename: ../objects/ycb_cube.yaml
+    static: False
+  - name: cube_3
+    filename: ../objects/ycb_cube.yaml
+    static: False
+  - name: cube_4
+    filename: ../objects/ycb_cube.yaml
+    static: False
 world_bounds: [-0.4, -0.15, -0.1, 0.35]
 states:
   - name: robot
@@ -15,4 +24,16 @@ states:
   - name: cube_1
     state:
       configuration: [-0.22, 0.03, -1.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: cube_2
+    state:
+      configuration: [-0.18, 0.03, -1.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: cube_3
+    state:
+      configuration: [-0.16, 0.05, -1.0]
+      velocity: [0.0, 0.0, 0.0]
+  - name: cube_4
+    state:
+      configuration: [-0.19, 0.11, -1.0]
       velocity: [0.0, 0.0, 0.0]
