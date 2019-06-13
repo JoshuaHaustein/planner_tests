@@ -7,9 +7,9 @@ max_velocity: 0.1
 max_rotation_vel: 1.0
 planning_timeout: 60.0
 control_limits:
-  velocity_limits: [0.04, 0.04, 0.5]
+  velocity_limits: [0.04, 0.04, 0.17]
   acceleration_limits: [0.1, 0.1, 0.8]
-  duration_limits: [0.0, 0.6]
+  duration_limits: [0.0, 1.6]
   subspaces:
     - [0, 1]
 collision_policy:
