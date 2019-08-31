@@ -48,6 +48,8 @@ namespace box2d {
 
             bool set_state(planner_tests::SetState::Request& req, planner_tests::SetState::Response& res);
 
+            bool set_static_pose(planner_tests::SetState::Request& req, planner_tests::SetState::Response& res);
+
         private:
             ros::NodeHandle _nhandle;
             mps::planner::pushing::PlanningProblem _planning_problem;
@@ -66,6 +68,7 @@ namespace box2d {
             ros::ServiceServer _propagate_service;
             ros::ServiceServer _set_active_objects_service;
             ros::ServiceServer _set_state_service;
+            ros::ServiceServer _set_static_pose_service;
 
             void cleanup();
         };

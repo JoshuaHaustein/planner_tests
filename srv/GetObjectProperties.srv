@@ -9,3 +9,4 @@ float32[] ground_friction_torque_integrals # integral over pressure distribution
 float32[] contact_friction_coeffs  # friction coefficients for obj-to-obj contact
 float32[] widths  # widths of local AABBs
 float32[] heights  # heights of local AABBs
+bool[] is_static  # flags whether object is static

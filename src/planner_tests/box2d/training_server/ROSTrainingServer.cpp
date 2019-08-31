@@ -18,6 +18,7 @@ ROSTrainingServer::ROSTrainingServer(mps::planner::pushing::PlanningProblem& pla
     _propagate_service = _nhandle.advertiseService("propagate", &ROSTrainingServer::propagate, this);
     _set_active_objects_service = _nhandle.advertiseService("set_active_objects", &ROSTrainingServer::set_active_objects, this);
     _set_state_service = _nhandle.advertiseService("set_state", &ROSTrainingServer::set_state, this);
+    _set_static_pose_service = _nhandle.advertiseService("set_static_pose", &ROSTrainingServer::set_static_pose, this);
     _box2d_world = std::dynamic_pointer_cast<sim_env::Box2DWorld>(_planning_problem.world);
     _box2d_robot = std::dynamic_pointer_cast<sim_env::Box2DRobot>(_planning_problem.robot);
     _logger = _box2d_world->getLogger();
@@ -68,6 +69,7 @@ bool ROSTrainingServer::get_object_properties(planner_tests::GetObjectProperties
         auto aabb = object->getLocalAABB();
         res.widths.push_back(aabb.getWidth());
         res.heights.push_back(aabb.getHeight());
+        res.is_static.push_back(object->isStatic());
     }
     return true;
 }
@@ -205,7 +207,9 @@ bool ROSTrainingServer::set_active_objects(planner_tests::SetActiveObjects::Requ
     }
     for (size_t i = 0; i < req.obj_names.size(); ++i) {
         auto object = _box2d_world->getObject(req.obj_names[i], false);
-        object->setEnabled(req.active[i]);
+        if (not object->isStatic()) {
+            object->setEnabled(req.active[i]);
+        }
     }
     res.service_success = true;
     return true;
@@ -240,6 +244,45 @@ bool ROSTrainingServer::set_state(planner_tests::SetState::Request& req, planner
     res.service_success = true;
     auto validity_checker = _planner.getValidityChecker();
     res.valid_state = validity_checker->isWorldStateValid(false);
+    _box2d_world->dropState(); // we succeeded, so we don't need the saved state anymore
+    return true;
+}
+
+bool ROSTrainingServer::set_static_pose(planner_tests::SetState::Request& req, planner_tests::SetState::Response& res)
+{
+    const static std::string log_prefix("ROSTrainingServer::set_static_pose");
+    std::lock_guard<std::recursive_mutex> lock(_box2d_world->getMutex());
+    _box2d_world->saveState(); // save state in case we fail
+    _logger->logDebug("Setting static pose", log_prefix);
+    res.service_success = false;
+    res.valid_state = true;
+    for (size_t i = 0; i < req.obj_names.size(); ++i) {
+        std::vector<sim_env::ObjectPtr> collidors;
+        auto obj = _box2d_world->getBox2DObject(req.obj_names[i]);
+        if (!obj) {
+            _logger->logErr("Could not set state for static object " + req.obj_names[i] + ". Object does not exist.", log_prefix);
+            _box2d_world->restoreState();
+            return false;
+        }
+        if (!obj->isStatic()) {
+            _logger->logErr("Could not set state for object " + req.obj_names[i] + ". Object is not static", log_prefix);
+            _box2d_world->restoreState();
+            return false;
+        }
+        obj->setPose(req.states[i].x, req.states[i].y, req.states[i].theta);
+        bool col = _box2d_world->checkCollision(obj, collidors);
+        if (col) {
+            // check whether any collision occurs with a static
+            for (auto c : collidors) {
+                if (c->isStatic()) {
+                    res.valid_state = false;
+                    break;
+                }
+            }
+        }
+
+    }
+    res.service_success = true;
     _box2d_world->dropState(); // we succeeded, so we don't need the saved state anymore
     return true;
 }
