@@ -52,6 +52,7 @@ class ROSOracleBridge(object):
         movables = (set(self._object_names) - self._statics) | set([self._robot_name])
         self._ordered_movables = [m for m in resp.obj_names if m in movables]
         self._active_objects = set(self._ordered_movables)
+        self._ordered_active_objects = [o for o in self._ordered_movables if o in self._active_objects]
         rospy.loginfo("Ready")
 
     def get_robot_name(self):
@@ -163,8 +164,7 @@ class ROSOracleBridge(object):
         """
         request = SetStateRequest()
         if b_active_only:
-            request.obj_names = [self._robot_name]
-            request.obj_names.extend(self._active_objects)
+            request.obj_names.extend(self._ordered_active_objects)
         else:
             request.obj_names = self._ordered_movables
         for obj_state in state:
@@ -194,8 +194,7 @@ class ROSOracleBridge(object):
         name_state_map = dict(zip(
             response.obj_names, [[pose.x, pose.y, pose.theta] for pose in response.states]))
         if b_active_only:
-            object_names = [self._robot_name]
-            object_names.extend(self._active_objects)
+            object_names = self._ordered_active_objects
         else:
             object_names = self._ordered_movables
         return numpy.array([name_state_map[name] for name in object_names])
@@ -232,6 +231,7 @@ class ROSOracleBridge(object):
         activated_objects = set([obj_name for (obj_name, b_active) in active_mapping.iteritems()
                                  if b_active and obj_name != self._robot_name])
         self._active_objects = old_active_objects - deactivated_objects | activated_objects
+        self._ordered_active_objects = [o for o in self._ordered_movables if o in self._active_objects]
 
     def propagate(self, action):
         """

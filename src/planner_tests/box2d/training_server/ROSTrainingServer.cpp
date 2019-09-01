@@ -222,7 +222,6 @@ bool ROSTrainingServer::set_state(planner_tests::SetState::Request& req, planner
     _box2d_world->saveState(); // save state in case we fail
     _logger->logDebug("Setting state", log_prefix);
     res.service_success = false;
-    res.valid_state = false;
     Eigen::VectorXf dof_values(3);
     for (size_t i = 0; i < req.obj_names.size(); ++i) {
         auto obj = _box2d_world->getObject(req.obj_names[i], false);
@@ -242,8 +241,11 @@ bool ROSTrainingServer::set_state(planner_tests::SetState::Request& req, planner
         obj->setDOFPositions(dof_values);
     }
     res.service_success = true;
-    auto validity_checker = _planner.getValidityChecker();
-    res.valid_state = validity_checker->isWorldStateValid(false);
+    // auto validity_checker = _planner.getValidityChecker();
+    // res.valid_state = validity_checker->isWorldStateValid(false);
+    std::vector<sim_env::Contact> contacts;
+    res.valid_state = not _box2d_world->checkCollision(contacts);
+    _logger->logDebug("Number of contacts: " + std::to_string(contacts.size()), log_prefix);
     _box2d_world->dropState(); // we succeeded, so we don't need the saved state anymore
     return true;
 }
