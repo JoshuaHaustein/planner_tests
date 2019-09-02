@@ -24,8 +24,8 @@ namespace planner_tests {
                     ListSliceDrawer(SliceWidget* widget);
                     ~ListSliceDrawer();
                     void clear() override;
-                    void addSlice(mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice) override;
-                    void sliceSelected(mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice, unsigned int state_idx=0);
+                    void addSlice(mps::planner::pushing::algorithm::SliceConstPtr slice) override;
+                    void sliceSelected(mps::planner::pushing::algorithm::SliceConstPtr slice, unsigned int state_idx=0);
                     void noSliceSelected();
 
                 protected:
@@ -52,9 +52,9 @@ namespace planner_tests {
                     int columnCount(const QModelIndex& parent) const override;
                     QVariant data(const QModelIndex& index, int role) const override;
                     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-                    void addSlice(mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr slice);
+                    void addSlice(mps::planner::pushing::algorithm::SliceConstPtr slice);
                     void clearSlices();
-                    std::vector<mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr> _slices;
+                    std::vector<mps::planner::pushing::algorithm::SliceConstPtr> _slices;
                 };
 
                 // member functions
@@ -65,7 +65,7 @@ namespace planner_tests {
                 sim_env::Box2DWorldPtr _world;
                 std::shared_ptr<ListSliceDrawer> _slice_drawer;
                 unsigned int _state_idx;
-                mps::planner::pushing::algorithm::SliceBasedOracleRRT::SliceConstPtr _selected_slice;
+                mps::planner::pushing::algorithm::SliceConstPtr _selected_slice;
             };
         }
     }
